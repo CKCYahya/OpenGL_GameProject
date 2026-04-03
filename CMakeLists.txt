@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(Camera VERSION 1.0)
+project(GameProject VERSION 1.0)
 
 # C++ Standartları
 set(CMAKE_CXX_STANDARD 17)
@@ -44,7 +44,7 @@ target_include_directories(imgui PRIVATE
 target_compile_definitions(imgui PRIVATE GLFW_INCLUDE_NONE)
 
 # Ana Oyun Uygulaması (Tüm kaynak kodlar ve glad.c)
-add_executable(Camera
+add_executable(GameProject
     src/main.cpp
     libs/glad/src/glad.c
     src/Camera.cpp
@@ -65,7 +65,7 @@ add_executable(Camera
 )
 
 # Projenin Başlık (Header) Dosyalarının Yolları
-target_include_directories(Camera PRIVATE 
+target_include_directories(GameProject PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/Header
     ${CMAKE_CURRENT_SOURCE_DIR}/include        # nlohmann/json.hpp buradan okunacak
@@ -78,10 +78,10 @@ target_include_directories(Camera PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/imgui/backends
 )
 
-target_compile_definitions(Camera PRIVATE GLFW_INCLUDE_NONE)
+target_compile_definitions(GameProject PRIVATE GLFW_INCLUDE_NONE)
 
 # Kütüphaneleri Ana Uygulamaya Bağla
-target_link_libraries(Camera PRIVATE
+target_link_libraries(GameProject PRIVATE
     glfw
     OpenGL::GL
     glm
