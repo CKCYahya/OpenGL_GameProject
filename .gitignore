@@ -1,0 +1,13 @@
+# Kütüphaneler (libs)
+libs/glfw/
+libs/glm/
+libs/imgui/
+libs/stb/
+libs/glad/
+
+# Kütüphaneler (include)
+include/nlohmann/
+
+# Derleme Klasörleri
+build/
+.vscode/
