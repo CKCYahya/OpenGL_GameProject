@@ -55,12 +55,12 @@ After the build process is complete, launch the generated executable:
 
 **For Windows:**
 ```bash
-.\Debug\Camera.exe
+.\Debug\GameProject.exe
 # or
-.\Camera.exe
+.\GameProject.exe
 ```
 
 **For Linux / macOS:**
 ```bash
-./Camera
+./GameProject
 ```

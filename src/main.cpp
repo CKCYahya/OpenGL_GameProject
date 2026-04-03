@@ -30,8 +30,8 @@ int main() {
   glfwSetWindowSizeLimits(window.getGLFWWindow(), width / 2, height / 2, width,
                           height);
 
-  Shader textureShader("texture.vert", "texture.frag");
-  Shader mapShader("map.vert", "texture.frag");
+  Shader textureShader("shaders/texture.vert", "shaders/texture.frag");
+  Shader mapShader("shaders/map.vert", "shaders/texture.frag");
 
   // --- GAME WORLD ---
   GameMap gameMap("newmap.json");
