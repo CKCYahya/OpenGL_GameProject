@@ -1,0 +1,16 @@
+
+
+ Karakterin yönüne ve pozisyonuna bağlı `Raycasting` ile isabetli su tespiti yapmak ve oyunun haritasındaki farklı su tipine göre (Tile ID: `2014`, `2015`, `2016`)  balık tutma mekanikleği eklemek için:
+
+
+`Header/Player.h`  `src/Player.cpp`
+`float ray;` sabiti kaldırıldı. Onun yerine  vektör uzayında ışın (ray) hesaplaması yapabilmek için `rayStart`, `rayEnd`, `rayDirection`, `newRayStart`, `newRayEnd` değişkenleri oluşturuldu.
+ Karakterin yüzünün dönük olduğu konuma ya da karakter modelinin transformasyon matrisine (Model Matrix) doğru bir ışın çizilerek `Draw` döngüsü içinde ışının pozisyonları `playerModel` ile çarpılarak; karakterin hareketlerine göre gücellenmesi sağlandı 
+
+`Header/GameMap.h`  `src/GameMap.cpp`
+ Haritadaki su alanlarını tutan `waterCache` verisi `std::vector<bool>` iken `std::vector<int>` formatına çevrildi. Artık o karenin düz su olup olmadığı (True/False) değil, suyun hangi tip su olduğu tamsayı kodu ile (`2014`, `2015`, `2016`) tutuluyor.
+ `checkWater` metodundaki fazladan konulmuş olan `+1` indeks hizalaması silinerek harita tile tespit formülü düzeltildi. 
+
+`Header/Fishing.h`  `src/Fishing.cpp`
+ Eski `isPlayerNearWater` denetleme fonksiyonu komple silindi. Artık `fishing` fonksiyonu içine eklenen `GameMap &gameMap` referansı üzerinden çağrılan `gameMap.checkWater(player.rayStart.x, player.rayStart.y)` kodu bu işi devraldı. 
+ oyuncunun baktığı yerin  koordinatları alınarak, balık tutulacak noktanın su tipi  tespit ediliyor. 
