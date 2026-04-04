@@ -3,8 +3,7 @@
 
 #include "Items.h"
 #include "Player.h"
-#include "NewMap.h"
-
+#include "GameMap.h"
 #include <map>
 #include <memory>
 
@@ -17,8 +16,7 @@ enum class States {
 
 class Fishing {
 public:
-  void fishing(Player &player, std::map<int, std::unique_ptr<Items>> &itemList );
-  bool isPlayerNearWater(const Player &player, const NewMap &gameMap);
+  void fishing(Player &player, std::map<int, std::unique_ptr<Items>> &itemList, GameMap &gameMap);
 };
 
 #endif // FISHING_H

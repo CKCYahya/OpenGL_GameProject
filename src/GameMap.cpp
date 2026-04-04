@@ -25,9 +25,11 @@ GameMap::GameMap(const char *mapFile) {
   for (size_t i = 0; i < colData.size(); ++i) {
     // If GID > 0, it's a collision tile
     collisionCache[i] = (colData[i] == 2000);
-    waterCache[i] =
-        (colData[i] != 0 &&
-         colData[i] != 2000); // Assuming water tiles have GID > 0 and not 2000
+    if (colData[i] == 2014 || colData[i] == 2015 || colData[i] == 2016) {
+      waterCache[i] = colData[i];
+    } else {
+      waterCache[i] = 0;
+    }
   }
 
   atlasTexture =
@@ -288,17 +290,17 @@ bool GameMap::checkCollision(float x, float y) {
   return false;
 }
 
-bool GameMap::checkWater(float x, float y) {
+int GameMap::checkWater(float x, float y) {
   float localX = x + worldWidth / 2.0f;
   float localY = y + worldHeight / 2.0f;
 
   if (localX < 0 || localX >= worldWidth || localY < 0 ||
       localY >= worldHeight) {
-    return false; // Out of bounds is not water
+    return 0; // Out of bounds is not water
   }
 
-  int tileX = (int)(localX / tileSize) + 1; // +1 to align with collision check
-  int tileY = (int)(localY / tileSize) + 1; // +1 to align with collision check
+  int tileX = (int)(localX / tileSize);
+  int tileY = (int)(localY / tileSize);
 
   int tiledRow = MAP_HEIGHT_TILES - 1 - tileY;
   int index = tiledRow * MAP_WIDTH_TILES + tileX;
@@ -306,5 +308,5 @@ bool GameMap::checkWater(float x, float y) {
   if (index >= 0 && index < waterCache.size()) {
     return waterCache[index];
   }
-  return false;
+  return 0;
 }

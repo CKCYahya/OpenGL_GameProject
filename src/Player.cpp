@@ -21,6 +21,8 @@ Player::Player(glm::vec3 startPos, float size, float speed)
       -size, -size, 0.0f, 0.0f, 0.0f, // Bottom Left
       -size, size,  0.0f, 0.0f, 1.0f  // Top Left
   };
+  rayStart = glm::vec4(Position.x, Position.y - size, 0.0f, 1.0f);
+  rayEnd = glm::vec4(Position.x, Position.y - size * 2, 0.0f, 1.0f);
 
   GLuint indices[] = {0, 1, 2, 0, 2, 3};
 
@@ -155,7 +157,9 @@ void Player::Draw(Shader &shader) {
 
   glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE,
                      glm::value_ptr(playerModel));
-
+  glm::vec3 newRayStart = glm::vec3(playerModel*rayStart);
+  glm::vec3 newRayEnd = glm::vec3(playerModel*rayEnd);
+  glm::vec3 rayDirection = glm::normalize(newRayEnd - newRayStart);
   vao->Bind();
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }

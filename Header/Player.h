@@ -44,7 +44,11 @@ public:
   InventorySlot slots[5];  // 5 adet envanter slotu
   int slotAmount;
   int selectedSlot;
-  float ray; // For interaction raycasting
+  glm::vec4 rayStart;
+  glm::vec4 rayEnd;
+  glm::vec3 rayDirection;
+  glm::vec3 newRayStart;
+  glm::vec3 newRayEnd;
   // Graphics
   std::unique_ptr<Texture> texUp;
   std::unique_ptr<Texture> texDown;
