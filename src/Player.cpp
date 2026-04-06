@@ -1,12 +1,12 @@
-#include "../Header/Player.h"
-#include "../Header/EBO.h"
-#include "../Header/GameMap.h"
-#include "../Header/Items.h"
-#include "../Header/Panel.h"
-#include "../Header/Shader.h"
-#include "../Header/Texture.h"
-#include "../Header/VAO.h"
-#include "../Header/VBO.h"
+#include "Player.h"
+#include "EBO.h"
+#include "GameMap.h"
+#include "Items.h"
+#include "Panel.h"
+#include "Shader.h"
+#include "Texture.h"
+#include "VAO.h"
+#include "VBO.h"
 
 Player::Player(glm::vec3 startPos, float size, float speed)
     : Position(startPos), size(size), speed(speed), direction(0) {

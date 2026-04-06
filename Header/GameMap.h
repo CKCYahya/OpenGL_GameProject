@@ -6,19 +6,19 @@
 #include <memory>
 #include <vector>
 
-#include "../libs/glad/include/glad/glad.h"
-#include "../libs/glm/glm.hpp"
-#include "../libs/glm/gtc/matrix_transform.hpp"
-#include "../libs/glm/gtc/type_ptr.hpp"
+#include "glad/glad.h"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
-#include "../Header/Camera.h"
-#include "../Header/EBO.h"
-#include "../Header/NewMap.h"
-#include "../Header/Shader.h"
-#include "../Header/Texture.h"
-#include "../Header/VAO.h"
-#include "../Header/VBO.h"
-#include "../libs/imgui/imgui.h"
+#include "Camera.h"
+#include "EBO.h"
+#include "NewMap.h"
+#include "Shader.h"
+#include "Texture.h"
+#include "VAO.h"
+#include "VBO.h"
+#include "imgui.h"
 class Player;
 struct MapTile {
   int gid;

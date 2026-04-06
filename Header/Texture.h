@@ -1,11 +1,11 @@
 ﻿#ifndef TEXTURE_CLASS_H
 #define TEXTURE_CLASS_H
 
-#include "../libs/glad/include/glad/glad.h"
-#include "../libs/glfw/include/glfw/glfw3.h"
-#include "../libs/stb/stb_image.h"
+#include "glad/glad.h"
+#include "glfw/glfw3.h"
+#include "stb_image.h"
 
-#include "../Header/Shader.h"
+#include "Shader.h"
 
 class Texture {
 public:

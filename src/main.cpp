@@ -1,14 +1,14 @@
-#include "../Header/Camera.h"
-#include "../Header/GameMap.h"
-#include "../Header/Items.h"
-#include "../Header/Panel.h"
-#include "../Header/Player.h"
-#include "../Header/Shader.h"
-#include "../Header/Texture.h"
-#include "../Header/Window.h"
-#include "../libs/imgui/backends/imgui_impl_glfw.h"
-#include "../libs/imgui/backends/imgui_impl_opengl3.h"
-#include "../libs/imgui/imgui.h"
+#include "Camera.h"
+#include "GameMap.h"
+#include "Items.h"
+#include "Panel.h"
+#include "Player.h"
+#include "Shader.h"
+#include "Texture.h"
+#include "Window.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#include "imgui.h"
 #include <iostream>
 
 using json = nlohmann::json;
@@ -23,6 +23,15 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
     camPtr->ProcessScroll((float)yoffset);
   }
 }
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
+    } else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+}
+
 int main() {
   stbi_set_flip_vertically_on_load(true);
 
@@ -63,6 +72,7 @@ int main() {
   camPtr = &camera; // Set global pointer
 
   glfwSetScrollCallback(window.getGLFWWindow(), scroll_callback);
+  glfwSetMouseButtonCallback(window.getGLFWWindow(), mouse_button_callback);
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -71,6 +81,7 @@ int main() {
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
   (void)io;
+  io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
   ImGui::StyleColorsDark();
   ImGui_ImplGlfw_InitForOpenGL(window.getGLFWWindow(), true);
   ImGui_ImplOpenGL3_Init("#version 330");
@@ -79,7 +90,11 @@ int main() {
 
   float lastFrame = 0.0f;
   float deltaTime = 0.0f;
-
+  GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+  const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+  bool isFullscreen = false;
+  int oldWinPosX = 0, oldWinPosY = 0;
+  int oldWinWidth = width, oldWinHeight = height;
   glDisable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -130,6 +145,21 @@ int main() {
           player.Interact(*(itemPair.second));
         }
       }
+    }
+
+    if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_F12) == GLFW_PRESS) {
+      state = 4;
+    }else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_F12) == GLFW_RELEASE &&
+               state == 4) {
+      if (isFullscreen) {
+        glfwSetWindowMonitor(window.getGLFWWindow(), NULL, oldWinPosX, oldWinPosY, oldWinWidth, oldWinHeight, 0);
+      } else {
+        glfwGetWindowPos(window.getGLFWWindow(), &oldWinPosX, &oldWinPosY);
+        glfwGetWindowSize(window.getGLFWWindow(), &oldWinWidth, &oldWinHeight);
+        glfwSetWindowMonitor(window.getGLFWWindow(), primaryMonitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+      }
+      isFullscreen = !isFullscreen;
+      state = 0;
     }
 
     if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_1) == GLFW_PRESS) {

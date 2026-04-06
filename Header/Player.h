@@ -1,12 +1,12 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "../libs/glad/include/glad/glad.h"
-#include "../libs/glfw/include/glfw/glfw3.h"
-#include "../libs/glm/glm.hpp"
-#include "../libs/glm/gtc/matrix_transform.hpp"
-#include "../libs/glm/gtc/type_ptr.hpp"
-#include "../libs/imgui/imgui.h"
+#include "glad/glad.h"
+#include "glfw/glfw3.h"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include "imgui.h"
 #include "Items.h"
 #include <memory>
 #include <string>

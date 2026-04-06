@@ -1,4 +1,4 @@
-﻿#include "../Header/Window.h"
+﻿#include "Window.h"
 #include <iostream>
 
 Window::Window(const char *title, int width, int height) {

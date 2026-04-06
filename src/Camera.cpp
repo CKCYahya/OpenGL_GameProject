@@ -1,5 +1,5 @@
-﻿
-#include "../Header/Camera.h"
+
+#include "Camera.h"
 #define GLM_ENABLE_EXPERIMENTAL
 
 Camera::Camera(int width, int height, glm::vec3 position) {
@@ -42,31 +42,33 @@ void Camera::Inputs(GLFWwindow *window, float dt, glm::vec3 targetPos,
   float velocity = speed * dt;
 
   if (mode == CAMERA_FREE) {
-    // --- RTS CAMERA MOVEMENT (Mouse Edge) ---
-    double mouseX, mouseY;
-    glfwGetCursorPos(window, &mouseX, &mouseY);
+    if (glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_CAPTURED) {
+      // --- RTS CAMERA MOVEMENT (Age of Empires Edge Pan) ---
+      double mouseX, mouseY;
+      glfwGetCursorPos(window, &mouseX, &mouseY);
 
-    int width, height;
-    glfwGetWindowSize(window, &width, &height);
+      int width, height;
+      glfwGetWindowSize(window, &width, &height);
 
-    // Edge threshold (how close to edge to convert)
-    float edge = 10.0f;
+      // Edge threshold (how close to edge to convert)
+      float edge = 10.0f;
 
-    // Pan Left
-    if (mouseX < edge)
-      Position.x -= velocity;
+      // Pan Left
+      if (mouseX < edge)
+        Position.x -= velocity;
 
-    // Pan Right
-    if (mouseX > width - edge)
-      Position.x += velocity;
+      // Pan Right
+      if (mouseX > width - edge)
+        Position.x += velocity;
 
-    // Pan Up
-    if (mouseY < edge)
-      Position.y += velocity;
+      // Pan Up
+      if (mouseY < edge)
+        Position.y += velocity;
 
-    // Pan Down
-    if (mouseY > height - edge)
-      Position.y -= velocity;
+      // Pan Down
+      if (mouseY > height - edge)
+        Position.y -= velocity;
+    }
   } else if (mode == CAMERA_LOCKED) {
     Position.x = targetPos.x - (width * zoom) / 2.0f;
     Position.y = targetPos.y - (height * zoom) / 2.0f;
@@ -100,11 +102,4 @@ void Camera::Inputs(GLFWwindow *window, float dt, glm::vec3 targetPos,
   if (Position.y > maxY)
     Position.y = maxY;
 
-  // Mouse Cursor Control
-  if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-  } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) ==
-             GLFW_PRESS) {
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-  }
 }

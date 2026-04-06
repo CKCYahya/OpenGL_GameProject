@@ -1,14 +1,14 @@
 #ifndef ITEMS_H
 #define ITEMS_H
 
-#include "../libs/glad/include/glad/glad.h"
-#include "../libs/glm/glm.hpp"
+#include "glad/glad.h"
+#include "glm/glm.hpp"
 #include <map>
 #include <memory>
 #include <string>
 
-#include "../include/nlohmann/json.hpp"
-#include "../libs/glm/gtc/type_ptr.hpp"
+#include "nlohmann/json.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include "Camera.h"
 
 using json = nlohmann::json;

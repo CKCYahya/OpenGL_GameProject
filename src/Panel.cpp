@@ -1,7 +1,7 @@
-#include "../Header/Panel.h"
-#include "../Header/Items.h"
-#include "../Header/Player.h"
-#include "../Header/Window.h"
+#include "Panel.h"
+#include "Items.h"
+#include "Player.h"
+#include "Window.h"
 #include <iostream>
 #include <string>
 

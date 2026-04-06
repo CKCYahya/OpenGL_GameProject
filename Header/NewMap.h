@@ -1,8 +1,8 @@
 #ifndef NEWMAP_H
 #define NEWMAP_H
 
-#include "../include/nlohmann/json.hpp"
-#include "../libs/glad/include/glad/glad.h"
+#include "nlohmann/json.hpp"
+#include "glad/glad.h"
 #include <fstream>
 #include <iostream>
 #include <map>
