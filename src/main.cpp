@@ -100,8 +100,13 @@ int main() {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   Panel panel;
   glfwSwapInterval(1);
+  Menu menu(&window, &textureShader);
   while (!window.ShouldClose()) {
-    float currentFrame = (float)glfwGetTime();
+    if (menu.state == MenuState::MAIN_MENU) {
+      menu.Draw();
+    }
+    else if (menu.state == MenuState::START) {
+      float currentFrame = (float)glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
 
@@ -244,6 +249,11 @@ int main() {
 
     window.SwapBuffers();
     window.PollEvents();
+    }
+    else if (menu.state == MenuState::PAUSE) {
+      
+    }
+    
   }
 
   textureShader.Delete();

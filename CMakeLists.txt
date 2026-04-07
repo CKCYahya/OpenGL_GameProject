@@ -62,6 +62,7 @@ add_executable(GameProject
     src/Panel.cpp
     src/Items.cpp
     src/Fishing.cpp
+    src/Menu.cpp
 )
 
 # Projenin Başlık (Header) Dosyalarının Yolları

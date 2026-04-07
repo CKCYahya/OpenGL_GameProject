@@ -1,0 +1,17 @@
+`Header/Menu.h`
+Menü ekranları (Ana Menü, Pause, vb.) arasında geçiş yaparken gelinen son ekranı hafızada tutmak ve "Ayarlar" sekmesinden çıkıldığında tekrar doğru ekrana geri dönebilmek için sisteme `previousState` değişkeni tanımlandı.
+Oyunun o an oynanmakta olup olmadığını belirlemek ve `Menu::Draw` çizimlerinde Ana Menü / Pause Menüsü sınırlandırmasını yönetmek adına `isGameStarted` mantıksal bayrağı (bool) eklendi.
+
+`src/Menu.cpp`
+Menü ekranlarının klasik, sürüklenebilir ufak Windows pencereleri gibi davranması yerine tüm alanını kaplayan  bir oyun arayüzü olması için ImGui çizimlerine `ImGuiWindowFlags_NoTitleBar`, `NoResize`, `NoMove` bayrakları eklendi ve `SetNextWindowPos`/`Size` komutlarıyla ekrana tam oturtuldu.
+Oyun devam ederken çalışacak ayrı bir `Pause` menüsü durumu oluşturuldu. İçerisine oyuna devam etmeyi sağlayan, veya ana ekrana dönülüp oyunu durduran "BackToMainMenu" butonu eklendi.
+Oyunun kapatılması emrinin menüden `EXIT`'e basıldığı an direkt olarak Menü sınıfı içinden halledilmesi sağlandı.
+
+`src/main.cpp`
+Menü sınıfının while döngüsüne entegrasyonu sağlandı.
+
+`CMakeLists.txt`
+Menü sınıfının CMakeLists.txt dosyasına entegrasyonu sağlandı.
+
+`image/menu.png`
+Menü arkaplanı için menu.png dosyası eklendi.

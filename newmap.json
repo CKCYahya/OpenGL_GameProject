@@ -170,16 +170,16 @@
                  "y":1345.33
                 }, 
                 {
-                 "gid":3145,
+                 "gid":3143,
                  "height":32,
-                 "id":32,
+                 "id":34,
                  "name":"",
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":32,
-                 "x":14,
-                 "y":1328
+                 "x":12,
+                 "y":1330
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -188,7 +188,7 @@
          "y":0
         }],
  "nextlayerid":4,
- "nextobjectid":33,
+ "nextobjectid":35,
  "orientation":"orthogonal",
  "renderorder":"left-up",
  "tiledversion":"1.11.2",
@@ -197,7 +197,7 @@
         {
          "columns":53,
          "firstgid":1,
-         "image":"GameProject\/image\/texture.png",
+         "image":"image\/texture.png",
          "imageheight":1184,
          "imagewidth":1696,
          "margin":0,
@@ -603,7 +603,7 @@
         {
          "columns":37,
          "firstgid":1962,
-         "image":"GameProject\/image\/renkler.png",
+         "image":"image\/renkler.png",
          "imageheight":827,
          "imagewidth":1188,
          "margin":0,
@@ -653,7 +653,7 @@
         {
          "columns":16,
          "firstgid":2887,
-         "image":"GameProject\/image\/spritesheet_32x32.png",
+         "image":"image\/spritesheet_32x32.png",
          "imageheight":512,
          "imagewidth":512,
          "margin":0,
@@ -746,7 +746,7 @@
         {
          "columns":1,
          "firstgid":3143,
-         "image":"GameProject\/image\/fishing rod.png",
+         "image":"image\/fishing rod.png",
          "imageheight":32,
          "imagewidth":32,
          "margin":0,
@@ -765,10 +765,6 @@
                         }]
                 }],
          "tilewidth":32
-        }, 
-        {
-         "firstgid":3145,
-         "source":"fishing rod.tsx"
         }],
  "tilewidth":32,
  "type":"map",
