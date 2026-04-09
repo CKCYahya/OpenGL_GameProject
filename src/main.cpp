@@ -6,6 +6,7 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "Window.h"
+#include "Menu.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui.h"
@@ -101,22 +102,21 @@ int main() {
   Panel panel;
   glfwSwapInterval(1);
   Menu menu(&window, &textureShader);
+  menu.LoadAssets(&textureShader);
   while (!window.ShouldClose()) {
-    if (menu.state == MenuState::MAIN_MENU) {
-      menu.Draw();
-    }
-    else if (menu.state == MenuState::START) {
-      float currentFrame = (float)glfwGetTime();
+    float currentFrame = (float)glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
 
     glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-
+    if (menu.state != MenuState::START) {
+      menu.Draw(&window, &textureShader, &player, &camera, &itemList);
+    }
+    else {
     textureShader.Activate();
 
     // Update camera width/height in case of window resize
@@ -128,6 +128,14 @@ int main() {
 
     // Update Player
     player.Update(window.getGLFWWindow(), deltaTime, gameMap);
+
+    if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+      state = 5;
+    } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) == GLFW_RELEASE &&
+               state == 5) {
+      menu.state = MenuState::PAUSE;
+      state = 0;
+    }
 
     // Toggle Camera Mode ("C" key)
     if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_C) == GLFW_PRESS) {
@@ -244,16 +252,12 @@ int main() {
 
     // --- MINIMAP ---
     gameMap.DrawMinimap(player.Position, camera, winWidth, winHeight);
+
+    }
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
     window.SwapBuffers();
     window.PollEvents();
-    }
-    else if (menu.state == MenuState::PAUSE) {
-      
-    }
-    
   }
 
   textureShader.Delete();

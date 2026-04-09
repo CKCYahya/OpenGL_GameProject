@@ -218,7 +218,26 @@ void Player::dropItem(int selectedSlot,
   }
 }
 
-void Player::fishing() {
+nlohmann::json Player::ToJson() {
+    nlohmann::json j;
 
-  std::cout << "Fishing action triggered!" << std::endl;
+    j["position"]["x"] = Position.x;
+    j["position"]["y"] = Position.y;
+    j["position"]["z"] = Position.z;
+    j["direction"] = direction;
+    j["speed"] = speed;
+
+    j["state"] = static_cast<int>(state);
+
+    nlohmann::json inventoryArray = nlohmann::json::array();
+    
+    for (int i = 0; i < slotAmount; ++i) {
+        nlohmann::json slotData;
+        slotData["itemID"] = slots[i].itemID;
+        slotData["count"] = slots[i].count;
+        inventoryArray.push_back(slotData);
+    }
+    j["inventory"] = inventoryArray;
+
+    return j;
 }

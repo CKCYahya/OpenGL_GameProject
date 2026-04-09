@@ -53,6 +53,7 @@ public:
                         int winWidth, int winHeight, Camera &camera);
   static Items *searchItems(std::map<int, std::unique_ptr<Items>> &itemList,
                             int slot);
+  static nlohmann::json ToJson(std::map<int, std::unique_ptr<Items>> &itemList);
 };
 
 inline std::vector<std::string> images = {"spritesheet_32x32", "fishing rod"};

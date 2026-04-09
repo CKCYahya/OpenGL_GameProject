@@ -195,3 +195,24 @@ Items *Items::searchItems(std::map<int, std::unique_ptr<Items>> &itemList,
   }
   return nullptr;
 }
+
+nlohmann::json Items::ToJson(std::map<int, std::unique_ptr<Items>> &itemList) {
+    nlohmann::json j;
+    j["items"] = nlohmann::json::array();
+    for(auto& item : itemList) {
+        nlohmann::json itemJson;
+        itemJson["ID"] = item.second->ID;
+        itemJson["name"] = item.second->name;
+        itemJson["position"]["x"] = item.second->position.x;
+        itemJson["position"]["y"] = item.second->position.y;
+        itemJson["position"]["z"] = item.second->position.z;
+        itemJson["slotIndex"] = item.second->slotIndex;
+        itemJson["value"] = item.second->value;
+        itemJson["atlasIndex"] = item.second->atlasIndex;
+        itemJson["uOffset"] = item.second->uOffset;
+        itemJson["vOffset"] = item.second->vOffset;
+        itemJson["isActive"] = item.second->isActive;
+        j["items"].push_back(itemJson);
+    }
+    return j;
+}

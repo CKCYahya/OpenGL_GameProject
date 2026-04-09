@@ -6,12 +6,24 @@
 #include "imgui_impl_opengl3.h"
 #include "Window.h"
 #include "Texture.h"
+#include <map>
+#include <memory>
+#include "VAO.h"
+#include "VBO.h"
+#include "EBO.h"
+#include "Shader.h"
+
+class Player;
+class Camera;
+class Items;
 
 enum class MenuState {
     MAIN_MENU,
     START,
     SETTINGS,
     PAUSE,
+    SAVE,
+    LOAD,
     EXIT
 };
 
@@ -27,7 +39,9 @@ public:
     Menu(Window* window, Shader* shader);
     ~Menu();
     void LoadAssets(Shader* shader);
-    void Draw(Shader* shader);
+    void Draw(Window* window, Shader* shader, Player* player, Camera* camera, std::map<int, std::unique_ptr<Items>>* itemList);
+    void SaveGame(Player* player, Camera* camera, std::map<int, std::unique_ptr<Items>>* itemList, const char* filename);
+    void LoadGame();
 };
 
 #endif

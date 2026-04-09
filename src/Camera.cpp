@@ -103,3 +103,13 @@ void Camera::Inputs(GLFWwindow *window, float dt, glm::vec3 targetPos,
     Position.y = maxY;
 
 }
+
+nlohmann::json Camera::ToJson() {
+    nlohmann::json j;
+    j["position"]["x"] = Position.x;
+    j["position"]["y"] = Position.y;
+    j["position"]["z"] = Position.z;
+    j["mode"] = mode;
+    j["zoom"] = zoom;
+    return j;
+}
