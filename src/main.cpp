@@ -6,6 +6,7 @@
 #include "../Header/Shader.h"
 #include "../Header/Texture.h"
 #include "../Header/Window.h"
+#include "../Header/Fishing.h"
 #include "../libs/imgui/backends/imgui_impl_glfw.h"
 #include "../libs/imgui/backends/imgui_impl_opengl3.h"
 #include "../libs/imgui/imgui.h"
@@ -84,6 +85,7 @@ int main() {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   Panel panel;
+  Fishing fishingSys;
   glfwSwapInterval(1);
   while (!window.ShouldClose()) {
     float currentFrame = (float)glfwGetTime();
@@ -108,7 +110,6 @@ int main() {
 
     // Update Player
     player.Update(window.getGLFWWindow(), deltaTime, gameMap);
-
     // Toggle Camera Mode ("C" key)
     if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_C) == GLFW_PRESS) {
       state = 2;
@@ -151,6 +152,10 @@ int main() {
                state == 3) {
       state = 0;
       player.dropItem(player.selectedSlot, itemList);
+    }
+
+    if (player.slots[player.selectedSlot].itemID == 0){
+      fishingSys.Update(window.getGLFWWindow(), deltaTime, player, itemList, gameMap);
     }
 
     // Update Camera

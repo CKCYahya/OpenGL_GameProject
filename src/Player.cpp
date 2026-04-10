@@ -221,8 +221,3 @@ void Player::dropItem(int selectedSlot,
     slots[selectedSlot].count = 0;
   }
 }
-
-void Player::fishing() {
-
-  std::cout << "Fishing action triggered!" << std::endl;
-}

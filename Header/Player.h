@@ -68,7 +68,6 @@ public:
   ImTextureID Interact(Items &item);
   void dropItem(int selectedSlot,
                 std::map<int, std::unique_ptr<Items>> &itemList);
-  void fishing();
 };
 
 #endif
