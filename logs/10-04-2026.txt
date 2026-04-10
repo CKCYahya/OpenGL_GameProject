@@ -1,0 +1,41 @@
+Sabahki kısım:
+`Header/Menu.h`
+Oyunun durumunu diske kaydetmek ve geri yüklemek amacıyla kullanılacak ana `SaveGame` ve `LoadGame` fonksiyonlarının deklarasyonları sıfırdan eklendi. Tüm kayıt ve klasör okuma işlemlerinin standart bir kütüphane üzerinden yönetilebilmesi adına sisteme `<filesystem>` ve `<vector>` kütüphaneleri dâhil edildi.
+Kullanıcının mevcut kayıt dosyalarını görüp aralarında gezinmesi için dosyaların adlarını UI üzerinde listeleyecek olan `saveNames` vektörü ve özel kayıt ismi yaratabilmesi adına (ImGui yapısıyla uyumlu çalışabilmesi için) `saveName` karakter dizisi (char array buffer) tanımlandı. İşletim sistemindeki kayıt klasörünü aktif tarayan `GetSaveNames` modülünün imzası oluşturuldu.
+Hedeften dosya okuma/yazma eylemlerinde kullanılmak üzere string tipinde `filename` argümanı entegre edildi.
+
+`src/Menu.cpp`
+Menü tasarımı ImGui pencerelerine atanan `NoTitleBar`, `NoResize` ve `NoMove` bayraklarıyla klasik Windows penceresi görünümünden çıkarılıp tam ekran oyun arayüzü kalıplarına uygun hale getirildi. 
+Arayüz font boyutu `SetWindowFontScale` ile standart üstüne çekildi; menü listeleri o anki pencere çözünürlüğüne veya buton sayısının fazlalığına bakılmaksızın `itemWidth / 2` formülleri ile tam dikey merkeze oturtulacak şekilde hizalandı.
+Kayıt sisteminin klasör kontrolünü sağlayan `GetSaveNames` işlemi sıfırdan yazılarak entegre edildi. Sistem çalışırken `saves/` adında kök dizin yoksa oluşturur; eğer oluşan klasör tamamen boşsa oyuncuya arayüz tasarımı göstermek için 3 adet temsili "Slot" üretir. Ancak içi dolu konumdaysa, sadece `.json` formatındaki kayıt türlerini arayüze listeler. Ekrandaki kayıtlara tıklandığında interaktif arayüz ile (InputText) kayıt adı istenir ve kaydedildiğine dair "Saved!" bildirimi yansıtılır.
+Eğer yollanan objeler mevcut ise `saves/` dizininin altına nlohmann nesnesi aracılığıyla paketleyip gönderir. `LoadGame` ise `saves/` içindeki spesifik metin dosyasının belleğe okunarak Json kütüphanesine aktarım yükünü alır.
+
+`Header/Window.h`
+Çözünürlük ve boyut yapılandırmalarını farklı farklı `x, y` tam sayı parametreleriyle uğraşmak yerine daha okunaklı modüler ve düzenli bir çatı altında kısıtlayabilmek amacıyla `Resolution` isminde custom bir veri modeli eklendi.
+Alınacak yeni boyut formatına sistemin ekran genişliğini zorlayacak `setResolution` kod dizini tanımlandı.
+
+`src/Window.cpp`
+`setResolution` modülü sıfırdan yazılarak işlevselleştirildi. Kendi başına oyun içi `glfwSetWindowSize` mimarisini barındırarak, parametreden elde ettiği `Resolution` yapısındaki yeni genişlik/yükseklik miktarlarını pencerelere ulaştıran eylem gerçekleştirildi.
+
+Öğleden sonraki kısım
+`Header/Fishing.h`
+Balık tutma mekanizmasının durumlarını yöneten `States` enum'u yeniden düzenlendi. Eski `IDLE` durumu kaldırılıp yerine `AVAILABLE` (oyuncu suyun yanında, balık tutabilir) ve `NOT_AVAILABLE` (oyuncu suyun yanında değil) eklendi. Böylece balık tutmanın başlayıp başlayamayacağı net bir şekilde ayrıştırıldı.
+Balık tutma sistemi Player sınıfının içinden çıkarılıp bağımsız `Fishing` sınıfına taşındı. Sınıfa şu değişkenler eklendi: hangi su türünün yakınında olunduğunu tutan `waterType`, F tuşuna basılı tutma kontrolü için `isFishing`, o anki balıkçılık aşamasını izleyen `currentState` ve bekleme/tepki sürelerini sayan `timer`.
+Eski tek fonksiyon (`fishing`) yerine iki ayrı metod tanımlandı: her frame çağrılarak durum makinesini yürüten `Update` ve balık yakalandığında envantere eklemeyi yapan `Catch`.
+
+`Header/Player.h`
+Balık tutma sorumluluğu artık `Fishing` sınıfında olduğu için Player'daki `fishing()` metod deklarasyonu silindi.
+
+`src/Player.cpp`
+`Player::fishing()` metodunun gövdesi silindi. Artık Player balık tutma işiyle ilgilenmiyor.
+
+`src/Fishing.cpp`
+`Catch` metodu sıfırdan yazıldı. Su türüne (2014, 2015, 2016) göre farklı olasılıklarla hangi balığın tutulacağı `rand()` ile belirleniyor. Önce envanterde aynı balık varsa sayısı artırılıyor, yoksa boş slota ekleniyor, yer yoksa "Inventory is full!" uyarısı veriliyor.
+`Update` metodu sıfırdan yazıldı ve bir durum makinesi (state machine) olarak çalışıyor:
+- `NOT_AVAILABLE/AVAILABLE`: Oyuncunun baktığı yöndeki tile su mu diye kontrol edilir. Suysa `AVAILABLE` olur ve F tuşuna basılıp bırakılınca `FISHING` durumuna geçer.
+- `FISHING`: 2-5 saniye arası rastgele bir bekleme süresi başlar. Süre dolunca balık ısırır ve `CAUGHT` durumuna geçilir. Oyuncu hareket ederse balıkçılık iptal olur.
+- `CAUGHT`: Oyuncunun 1.5 saniye içinde F'ye basması gerekir. Basarsa `Catch` çağrılır, basmazsa balık kaçar.
+
+`src/main.cpp`
+`Fishing.h` dahil edilerek `Fishing fishingSys` nesnesi oluşturuldu.
+Oyun döngüsüne balık tutma kontrolü eklendi: oyuncunun elinde olta varsa (`selectedSlot.itemID == 0`) her frame `fishingSys.Update` çağrılır; yoksa balıkçılık sistemi devre dışı kalır.

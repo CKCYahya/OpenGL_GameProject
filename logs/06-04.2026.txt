@@ -1,0 +1,14 @@
+Projeye Ait Tüm `.cpp` ve `.h` Dosyaları
+Dosyaların birbirini `../Header/` veya `../libs/` gibi göreli relative path ön ekleriyle çağırdığı `#include` satırları temizlendi. CMake üzerindeki include ayarlarına tam uyumlu olacak şekilde çağrılması sağlandı.
+
+`src/main.cpp`
+Fare kontrolünü düzenlemek için `mouse_button_callback` olayı tanımlandı. Sol tıka basıldığında farenin görünürlüğü bozulmadan yalnızca ekran dışına taşmasını engelleyen (`GLFW_CURSOR_CAPTURED`), sağ tıka basıldığında ise kısıtlamayı serbest bırakan (`GLFW_CURSOR_NORMAL`) bir yapı kuruldu.
+ImGui arayüzünün GLFW üzerinde aldığımız fare durumunu her saniye görünmesini engellemek için `ImGuiConfigFlags_NoMouseCursorChange` parametresi ayarlandı.
+F12 tuşu ile tam ekran modundan (Fullscreen) pencereli moda dönüldüğünde boyutların ve pozisyonun bozulması problemi çözüldü. Sistemin tam ekrana geçmeden önce mevcut X,Y pencere kordinatlarını ve çözünürlüğünü `oldWinPosX`, `oldWinWidth` gibi  değişkenlere kaydedip geri dönüldüğünde bunları tekrar uygulaması sağlandı.
+
+`src/Camera.cpp`
+Fare tıklanıp oyun ekranına sınırlandırıldığında (`CAPTURED` modunda iken) farenin sürüklendiği ekran kenarlarına doğru haritayı kaydırma özelliği eklendi. Sağ tıklı, yani `NORMAL` fare kullanımlarında oyun arayüzü üstündeki hareketlerin veya yan ekrana fare geçişlerinin oyun kamerasını oynatması engellendi.
+
+https://www.glfw.org/docs/3.3/window_guide.html#window_full_screen
+https://www.glfw.org/docs/3.3/input_guide.html#cursor_enter
+https://www.glfw.org/docs/3.3/group__input.html#gad27f8ad0142c038a281466c0966817d8
