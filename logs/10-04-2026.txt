@@ -17,7 +17,7 @@ Alınacak yeni boyut formatına sistemin ekran genişliğini zorlayacak `setReso
 `src/Window.cpp`
 `setResolution` modülü sıfırdan yazılarak işlevselleştirildi. Kendi başına oyun içi `glfwSetWindowSize` mimarisini barındırarak, parametreden elde ettiği `Resolution` yapısındaki yeni genişlik/yükseklik miktarlarını pencerelere ulaştıran eylem gerçekleştirildi.
 
-Öğleden sonraki kısım
+Öğleden sonraki kısım:
 `Header/Fishing.h`
 Balık tutma mekanizmasının durumlarını yöneten `States` enum'u yeniden düzenlendi. Eski `IDLE` durumu kaldırılıp yerine `AVAILABLE` (oyuncu suyun yanında, balık tutabilir) ve `NOT_AVAILABLE` (oyuncu suyun yanında değil) eklendi. Böylece balık tutmanın başlayıp başlayamayacağı net bir şekilde ayrıştırıldı.
 Balık tutma sistemi Player sınıfının içinden çıkarılıp bağımsız `Fishing` sınıfına taşındı. Sınıfa şu değişkenler eklendi: hangi su türünün yakınında olunduğunu tutan `waterType`, F tuşuna basılı tutma kontrolü için `isFishing`, o anki balıkçılık aşamasını izleyen `currentState` ve bekleme/tepki sürelerini sayan `timer`.
@@ -28,13 +28,17 @@ Balık tutma sorumluluğu artık `Fishing` sınıfında olduğu için Player'dak
 
 `src/Player.cpp`
 `Player::fishing()` metodunun gövdesi silindi. Artık Player balık tutma işiyle ilgilenmiyor.
+Ray sistemi baştan tasarlandı. Daha önce her WASD yönü için ayrı ayrı `rayStart`/`rayEnd` ataması yapılıyordu ve ray sadece aşağı yönü kontrol edebiliyordu. Yeni sistemde ray'ler orijine (0,0) göre tanımlanıp `playerModel` matrisi ile dünya koordinatlarına dönüştürülüyor.
+Yön bazlı ray güncellemesi trigonometri (cos/sin) ile yapılmaya başlandı. Her yön için sabit açılar bir dizide tutularak (`Down=270°, Up=90°, Left=180°, Right=0°`), direction değişkenine göre `rayEnd` tek satırda hesaplanıyor. Böylece ray, oyuncunun baktığı her yöne otomatik olarak dönüyor ve balık tutma sistemi artık 4 yönde de düzgün çalışıyor.
+Ray hesaplaması `Draw` fonksiyonundan `Update` fonksiyonuna taşındı. `newRayStart` ve `newRayEnd` artık yerel değişken yerine sınıf değişkeni olarak atanıyor, böylece Fishing sistemi bu değerlere erişebiliyor.
 
 `src/Fishing.cpp`
-`Catch` metodu sıfırdan yazıldı. Su türüne (2014, 2015, 2016) göre farklı olasılıklarla hangi balığın tutulacağı `rand()` ile belirleniyor. Önce envanterde aynı balık varsa sayısı artırılıyor, yoksa boş slota ekleniyor, yer yoksa "Inventory is full!" uyarısı veriliyor.
+`Catch` metodu sıfırdan yazıldı. Su türüne (2014, 2015, 2016) göre farklı olasılıklarla hangi balığın tutulacağı `rand()` ile belirleniyor. Önce envanterde aynı balık varsa sayısı artırılıyor (stackleniyor), yoksa boş slota ekleniyor, yer yoksa "Inventory is full!" uyarısı veriliyor.
 `Update` metodu sıfırdan yazıldı ve bir durum makinesi (state machine) olarak çalışıyor:
-- `NOT_AVAILABLE/AVAILABLE`: Oyuncunun baktığı yöndeki tile su mu diye kontrol edilir. Suysa `AVAILABLE` olur ve F tuşuna basılıp bırakılınca `FISHING` durumuna geçer.
-- `FISHING`: 2-5 saniye arası rastgele bir bekleme süresi başlar. Süre dolunca balık ısırır ve `CAUGHT` durumuna geçilir. Oyuncu hareket ederse balıkçılık iptal olur.
-- `CAUGHT`: Oyuncunun 1.5 saniye içinde F'ye basması gerekir. Basarsa `Catch` çağrılır, basmazsa balık kaçar.
+- `NOT_AVAILABLE/AVAILABLE`: Oyuncunun baktığı yöndeki tile `player.newRayEnd` kullanılarak su mu diye kontrol edilir. Suysa `AVAILABLE` olur.
+- F tuşu kontrolü press/release ayrımıyla çalışıyor: F'ye basıldığında (`isFishing == false` ise) doğrudan `FISHING` durumuna geçilir ve timer başlatılır. F bırakıldığında sadece `isFishing` bayrağı sıfırlanır.
+- `FISHING`: 2-5 saniye arası rastgele bir bekleme süresi başlar. Süre dolunca balık ısırır ve `CAUGHT` durumuna geçilir. Oyuncu hareket ederse balıkçılık iptal olur. Hareket kontrolü artık `FISHING` bloğunun içine, timer kontrolünden önceye yerleştirildi ki erişilemez kod (unreachable code) oluşmasın.
+- `CAUGHT`: Oyuncunun 1.5 saniye içinde F'ye basması gerekir. Basarsa `Catch` çağrılır, basmazsa balık kaçar. Balık yakalandığında veya kaçtığında `isFishing = true` ayarlanarak, F tuşunun basılı kalmasının otomatik olarak yeni bir oltalama tetiklemesi engelleniyor.
 
 `src/main.cpp`
 `Fishing.h` dahil edilerek `Fishing fishingSys` nesnesi oluşturuldu.
