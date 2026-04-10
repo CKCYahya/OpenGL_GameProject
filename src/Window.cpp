@@ -49,3 +49,7 @@ void Window::FramebufferSizeCallback(GLFWwindow *window, int width,
   // Adjust the viewport to the new window dimensions
   glViewport(0, 0, width, height);
 }
+
+void Window::setResolution(Resolution resolution) {
+  glfwSetWindowSize(m_Window, resolution.width, resolution.height);
+}

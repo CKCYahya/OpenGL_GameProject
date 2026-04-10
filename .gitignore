@@ -11,3 +11,6 @@ include/nlohmann/
 # Derleme Klasörleri
 build/
 .vscode/
+
+# Kayıt Klasörü
+saves/

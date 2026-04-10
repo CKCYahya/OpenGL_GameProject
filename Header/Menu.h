@@ -12,6 +12,9 @@
 #include "VBO.h"
 #include "EBO.h"
 #include "Shader.h"
+#include "Window.h"
+#include <string>
+#include <filesystem>
 
 class Player;
 class Camera;
@@ -29,6 +32,8 @@ enum class MenuState {
 
 class Menu {
 public:
+    char saveName[100] = "";
+    std::vector<std::string> saveNames;
     MenuState state;
     MenuState previousState;
     bool isGameStarted;
@@ -40,8 +45,9 @@ public:
     ~Menu();
     void LoadAssets(Shader* shader);
     void Draw(Window* window, Shader* shader, Player* player, Camera* camera, std::map<int, std::unique_ptr<Items>>* itemList);
-    void SaveGame(Player* player, Camera* camera, std::map<int, std::unique_ptr<Items>>* itemList, const char* filename);
-    void LoadGame();
+    void SaveGame(Player* player, Camera* camera, std::map<int, std::unique_ptr<Items>>* itemList, std::string filename);
+    void LoadGame(Player* player, Camera* camera, std::map<int, std::unique_ptr<Items>>* itemList, std::string filename);
+    void GetSaveNames();
 };
 
 #endif
