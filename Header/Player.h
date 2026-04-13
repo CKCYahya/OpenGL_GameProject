@@ -23,6 +23,7 @@ class EBO;
 
 struct InventorySlot {
   int itemID = -1;    
+  std::string itemName = "UNKNOWN";
   GLuint atlasID = 0; 
   int atlasIndex = -1; 
   float uOffset = 0.0f;

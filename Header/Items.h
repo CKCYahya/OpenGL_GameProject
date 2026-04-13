@@ -38,7 +38,7 @@ public:
   static std::vector<glm::vec2> atlasWH;
   static std::vector<std::shared_ptr<Texture>> loadedAtlases;
   float uOffset, vOffset;
-  Items(const std::string &name, const glm::vec3 &position);
+  Items(const std::string &name, const glm::vec3 &position, int itemID);
   ~Items();
 
   void Load(Shader &shader, const char *texturePath);
@@ -55,7 +55,7 @@ public:
                             int slot);
   static glm::vec2 CalculateUV(int itemID, int atlasIndex);
   static int GetAtlasIndex(int itemID);
-  static void AddItem(Player &player, std::map<int, std::unique_ptr<Items>> &itemList, int itemID, std::string itemName);
+  static void AddItem(Player &player, int itemID, std::string itemName);
 };
 
 inline std::vector<std::string> images = {"spritesheet_32x32", "fishing rod"};

@@ -17,8 +17,8 @@
 std::vector<glm::vec2> Items::atlasWH;
 std::vector<std::shared_ptr<Texture>> Items::loadedAtlases;
 
-Items::Items(const std::string &name, const glm::vec3 &position)
-    : name(name), position(position) {
+Items::Items(const std::string &name, const glm::vec3 &position, int itemID)
+    : name(name), position(position), ID(itemID) {
   float size = 16.0f;
   // Initialize VAO, VBO, EBO for the item
   // Load texture using texturePath
@@ -99,8 +99,7 @@ Items::readJsonItems(const char *jsonItems) {
                   std::string propValue = prop.value("value", "");
                   if (propName == "item") {
                     auto newItem = std::make_unique<Items>(
-                        propValue, glm::vec3(0.0f, 0.0f, 0.0f));
-                    newItem->ID = localID;
+                        propValue, glm::vec3(0.0f, 0.0f, 0.0f), localID);
                     newItem->atlasIndex = i;
                     int rastgeleSayi = min + (std::rand() % (max - min + 1));
                     newItem->position =
@@ -216,7 +215,11 @@ int Items::GetAtlasIndex(int itemID){
     return -1;
 }
 
-void Items::AddItem(Player &player, std::map<int, std::unique_ptr<Items>> &itemList, int itemID, std::string itemName){
+void Items::AddItem(Player &player, int itemID, std::string itemName){
+    if (itemID < 0) {
+        std::cerr << "Error: Invalid item ID passed to AddItem (" << itemID << ")" << std::endl;
+        return;
+    }
     for(auto& item : player.slots){
         if(item.itemID == itemID && item.itemID != -1){
             item.count += 1;
@@ -228,6 +231,7 @@ void Items::AddItem(Player &player, std::map<int, std::unique_ptr<Items>> &itemL
         auto& item = player.slots[i];
         if(item.itemID == -1){
             item.itemID = itemID;
+            item.itemName = itemName;
             item.atlasIndex = Items::GetAtlasIndex(itemID);
             item.atlasID = Items::loadedAtlases[item.atlasIndex]->ID;
             item.uOffset = Items::CalculateUV(itemID, item.atlasIndex).x;
@@ -235,11 +239,6 @@ void Items::AddItem(Player &player, std::map<int, std::unique_ptr<Items>> &itemL
             item.uv0 = ImVec2(item.uOffset, item.vOffset + 32.0f / Items::atlasWH[item.atlasIndex].y);
             item.uv1 = ImVec2(item.uOffset + 32.0f / Items::atlasWH[item.atlasIndex].x, item.vOffset);
             item.count = 1;
-            itemList[itemID] = std::make_unique<Items>(itemName, player.Position);
-            itemList[itemID]->slotIndex = i;
-            itemList[itemID]->atlasIndex = item.atlasIndex;
-            itemList[itemID]->uOffset = item.uOffset;
-            itemList[itemID]->vOffset = item.vOffset;
             std::cout << "You added a " << itemName << " to your inventory!" << std::endl;
             return;
         } 

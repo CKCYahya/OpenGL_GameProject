@@ -210,7 +210,7 @@ int main() {
     }
     ImGui::End();
 
-    panel.Update(window, player, itemList);
+    panel.Update(window, player);
 
     // --- MINIMAP ---
     gameMap.DrawMinimap(player.Position, camera, winWidth, winHeight);

@@ -36,7 +36,9 @@ void Fishing::Catch(Player &player,
         }
     }
 
-    Items::AddItem(player, itemList, itemID, itemName);
+    if (itemID != -1) {
+        Items::AddItem(player, itemID, itemName);
+    }
     return;   
 
 } 

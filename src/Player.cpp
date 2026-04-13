@@ -194,6 +194,7 @@ ImTextureID Player::Interact(Items &item) {
       this->slots[slotIndex].count += 1;
     } else if (slotIndex != -1) {
       this->slots[slotIndex].itemID = item.ID;
+      this->slots[slotIndex].itemName = item.name;
       this->slots[slotIndex].atlasID = item.loadedAtlases[item.atlasIndex]->ID;
       this->slots[slotIndex].count += 1;
       float atlasW = item.atlasWH[item.atlasIndex].x;
@@ -219,16 +220,31 @@ void Player::dropItem(int selectedSlot,
                       std::map<int, std::unique_ptr<Items>> &itemList) {
   if (selectedSlot >= 0 && selectedSlot < slotAmount &&
       slots[selectedSlot].itemID != -1) {
+    int droppedItemID = slots[selectedSlot].itemID;
     Items *item = Items::searchItems(itemList, selectedSlot);
+    
+    // If not found in the map create a new one
+    if (item == nullptr) {
+      static int dropCounter = 100000; 
+      int entityID = dropCounter++;
+      std::string dropName = slots[selectedSlot].itemName;
+      itemList[entityID] = std::make_unique<Items>(dropName, this->Position, droppedItemID);
+      item = itemList[entityID].get();
+      item->atlasIndex = Items::GetAtlasIndex(droppedItemID);
+    }
+
     if(slots[selectedSlot].count > 1){
       slots[selectedSlot].count -= 1;
       item->position = this->Position;
-      item->isActive = !item->isActive;
+      item->isActive = true;  
+      item->slotIndex = -1;   
       return;
     }
+    
     item->slotIndex = -1;
     item->position = this->Position;
-    item->isActive = !item->isActive;
+    item->isActive = true;
+    
     slots[selectedSlot].itemID = -1;
     slots[selectedSlot].atlasID = 0;
     slots[selectedSlot].count = 0;

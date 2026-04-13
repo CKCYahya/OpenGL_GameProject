@@ -18,8 +18,7 @@ public:
   Panel();
   ~Panel();
 
-  void Update(Window &window, Player &player,
-              std::map<int, std::unique_ptr<Items>> &itemList);
+  void Update(Window &window, Player &player);
 
 private:
   float slotSize;

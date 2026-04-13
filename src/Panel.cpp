@@ -11,8 +11,7 @@ Panel::Panel() {
   bottomMargin = 50.0f;
 }
 
-void Panel::Update(Window &window, Player &player,
-                   std::map<int, std::unique_ptr<Items>> &itemList) {
+void Panel::Update(Window &window, Player &player) {
   int currentWidth, currentHeight;
   glfwGetWindowSize(window.getGLFWWindow(), &currentWidth, &currentHeight);
 
