@@ -151,8 +151,6 @@ void Items::drawAtlas(Shader &shader,
   float viewCenterY = camera.Position.y + visibleHeight / 2.0f;
   for (int i = 0; i < loadedAtlases.size(); i++) {
     loadedAtlases[i]->Bind();
-    int cols = static_cast<int>(atlasWH[i].x / 32);
-    int totalRows = static_cast<int>(atlasWH[i].y / 32);
     for (auto &item : itemList) {
       if (item.second->atlasIndex != i) {
         continue;
@@ -160,12 +158,9 @@ void Items::drawAtlas(Shader &shader,
       if (!item.second->isActive) {
         continue;
       }
-      int localID = item.second->ID;
-      int col = localID % cols;
-      int row = localID / cols;
-      int texRow = totalRows - 1 - row;
-      item.second->uOffset = (col * 32.0f) / atlasWH[i].x;
-      item.second->vOffset = (texRow * 32.0f) / atlasWH[i].y;
+      glm::vec2 uv = CalculateUV(item.second->ID, item.second->atlasIndex);
+      item.second->uOffset = uv.x;
+      item.second->vOffset = uv.y;
       glUniform2f(glGetUniformLocation(shader.ID, "texOffset"),
                   item.second->uOffset, item.second->vOffset);
       glm::vec2 texScale(32.0f / atlasWH[i].x, 32.0f / atlasWH[i].y);
@@ -194,4 +189,61 @@ Items *Items::searchItems(std::map<int, std::unique_ptr<Items>> &itemList,
     }
   }
   return nullptr;
+}
+
+glm::vec2 Items::CalculateUV(int itemID, int atlasIndex){
+    int cols = static_cast<int>(atlasWH[atlasIndex].x / 32);
+    int totalRows = static_cast<int>(atlasWH[atlasIndex].y / 32);
+    int col = itemID % cols;
+    int row = itemID / cols;
+    int texRow = totalRows - 1 - row;
+    float uOffset = (col * 32.0f) / atlasWH[atlasIndex].x;
+    float vOffset = (texRow * 32.0f) / atlasWH[atlasIndex].y;
+    return glm::vec2(uOffset, vOffset);
+}
+
+int Items::GetAtlasIndex(int itemID){
+    int offset = 0;
+    for(int i = 0; i < loadedAtlases.size(); i++){
+        int cols = static_cast<int>(atlasWH[i].x / 32);
+        int rows = static_cast<int>(atlasWH[i].y / 32);
+        int tileCount = cols * rows;
+        if(itemID >= offset && itemID < offset + tileCount){
+            return i;
+        }
+        offset += tileCount;
+    }
+    return -1;
+}
+
+void Items::AddItem(Player &player, std::map<int, std::unique_ptr<Items>> &itemList, int itemID, std::string itemName){
+    for(auto& item : player.slots){
+        if(item.itemID == itemID && item.itemID != -1){
+            item.count += 1;
+            std::cout << "You added a " << itemName << " to your inventory!" << std::endl;
+            return;
+        }
+    }
+    for(int i = 0; i < 5; i++){
+        auto& item = player.slots[i];
+        if(item.itemID == -1){
+            item.itemID = itemID;
+            item.atlasIndex = Items::GetAtlasIndex(itemID);
+            item.atlasID = Items::loadedAtlases[item.atlasIndex]->ID;
+            item.uOffset = Items::CalculateUV(itemID, item.atlasIndex).x;
+            item.vOffset = Items::CalculateUV(itemID, item.atlasIndex).y;
+            item.uv0 = ImVec2(item.uOffset, item.vOffset + 32.0f / Items::atlasWH[item.atlasIndex].y);
+            item.uv1 = ImVec2(item.uOffset + 32.0f / Items::atlasWH[item.atlasIndex].x, item.vOffset);
+            item.count = 1;
+            itemList[itemID] = std::make_unique<Items>(itemName, player.Position);
+            itemList[itemID]->slotIndex = i;
+            itemList[itemID]->atlasIndex = item.atlasIndex;
+            itemList[itemID]->uOffset = item.uOffset;
+            itemList[itemID]->vOffset = item.vOffset;
+            std::cout << "You added a " << itemName << " to your inventory!" << std::endl;
+            return;
+        } 
+    }
+    std::cout << "Inventory is full!" << std::endl;
+    return;   
 }

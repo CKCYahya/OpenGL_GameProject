@@ -220,6 +220,12 @@ void Player::dropItem(int selectedSlot,
   if (selectedSlot >= 0 && selectedSlot < slotAmount &&
       slots[selectedSlot].itemID != -1) {
     Items *item = Items::searchItems(itemList, selectedSlot);
+    if(slots[selectedSlot].count > 1){
+      slots[selectedSlot].count -= 1;
+      item->position = this->Position;
+      item->isActive = !item->isActive;
+      return;
+    }
     item->slotIndex = -1;
     item->position = this->Position;
     item->isActive = !item->isActive;

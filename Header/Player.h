@@ -22,11 +22,14 @@ class VBO;
 class EBO;
 
 struct InventorySlot {
-  int itemID = -1;    // -1 ise boş kabul edilir
-  GLuint atlasID = 0; // Eşyanın görseli
+  int itemID = -1;    
+  GLuint atlasID = 0; 
+  int atlasIndex = -1; 
+  float uOffset = 0.0f;
+  float vOffset = 0.0f;
   ImVec2 uv0;
   ImVec2 uv1;
-  int count = 0; // Eşya adedi
+  int count = 0; 
 };
 enum class State { IDLE, MOVING, INTERACTING };
 

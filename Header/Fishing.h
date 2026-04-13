@@ -25,6 +25,7 @@ public:
   float timer = 0.0f;
   void Catch(Player &player, std::map<int, std::unique_ptr<Items>> &itemList, GameMap &gameMap);
   void Update(GLFWwindow* window,float dt, Player &player, std::map<int, std::unique_ptr<Items>> &itemList, GameMap &gameMap);
+  
 };
 
 #endif // FISHING_H

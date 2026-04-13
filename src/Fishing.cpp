@@ -6,44 +6,37 @@ void Fishing::Catch(Player &player,
                    GameMap &gameMap) {
     int chances = rand() % 100;
     int itemID = -1;
+    std::string itemName = "";
     if(waterType == 2014){
         if(chances < 25){
             itemID = 86;
+            itemName = "palamut";
         }
         else{
             itemID = 87;
+            itemName = "levrek";
         }
     } else if(waterType == 2015){
         if(chances < 50){
             itemID = 88;
+            itemName = "istavrit";
         }
         else{
             itemID = 89;
+            itemName = "uskumru";
         }
     } else if(waterType == 2016){
         if(chances < 5){
             itemID = 90;
+            itemName = "lufer";
         }
         else{
             itemID = 87;
+            itemName = "levrek";
         }
     }
-    for(auto& item : player.slots){
-        if(item.itemID == itemID && item.itemID != -1){
-            item.count += 1;
-            std::cout << "You caught a " << itemID << "!" << std::endl;
-            return;
-        }
-    }
-    for(auto& item : player.slots){
-        if(item.itemID == -1){
-            item.itemID = itemID;
-            item.count = 1;
-            std::cout << "You caught a " << itemID << "!" << std::endl;
-            return;
-        } 
-    }
-    std::cout << "Inventory is full!" << std::endl;
+
+    Items::AddItem(player, itemList, itemID, itemName);
     return;   
 
 } 
@@ -99,4 +92,5 @@ void Fishing::Update(GLFWwindow* window, float dt, Player &player, std::map<int,
   return;
 
 }
+
 

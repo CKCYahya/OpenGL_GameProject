@@ -53,6 +53,9 @@ public:
                         int winWidth, int winHeight, Camera &camera);
   static Items *searchItems(std::map<int, std::unique_ptr<Items>> &itemList,
                             int slot);
+  static glm::vec2 CalculateUV(int itemID, int atlasIndex);
+  static int GetAtlasIndex(int itemID);
+  static void AddItem(Player &player, std::map<int, std::unique_ptr<Items>> &itemList, int itemID, std::string itemName);
 };
 
 inline std::vector<std::string> images = {"spritesheet_32x32", "fishing rod"};
