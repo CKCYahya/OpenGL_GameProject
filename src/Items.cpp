@@ -98,6 +98,12 @@ Items::readJsonItems(const char *jsonItems) {
                   std::string propName = prop.value("name", "");
                   std::string propValue = prop.value("value", "");
                   if (propName == "item") {
+                    // Balıkları spawnlama, sadece balık tutmayla elde edilsinler
+                    if (propValue == "palamut" || propValue == "levrek" || 
+                        propValue == "istavrit" || propValue == "uskumru" || 
+                        propValue == "lufer") {
+                      continue;
+                    }
                     auto newItem = std::make_unique<Items>(
                         propValue, glm::vec3(0.0f, 0.0f, 0.0f), localID);
                     newItem->atlasIndex = i;
