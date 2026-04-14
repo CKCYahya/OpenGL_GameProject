@@ -6,10 +6,11 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "Window.h"
+#include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-#include "imgui.h"
 #include <iostream>
+
 
 using json = nlohmann::json;
 
@@ -24,12 +25,13 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
   }
 }
 
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
-    } else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    }
+void mouse_button_callback(GLFWwindow *window, int button, int action,
+                           int mods) {
+  if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
+  } else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+  }
 }
 
 int main() {
@@ -90,8 +92,8 @@ int main() {
 
   float lastFrame = 0.0f;
   float deltaTime = 0.0f;
-  GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
-  const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+  GLFWmonitor *primaryMonitor = glfwGetPrimaryMonitor();
+  const GLFWvidmode *mode = glfwGetVideoMode(primaryMonitor);
   bool isFullscreen = false;
   int oldWinPosX = 0, oldWinPosY = 0;
   int oldWinWidth = width, oldWinHeight = height;
@@ -149,14 +151,17 @@ int main() {
 
     if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_F12) == GLFW_PRESS) {
       state = 4;
-    }else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_F12) == GLFW_RELEASE &&
+    } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_F12) ==
+                   GLFW_RELEASE &&
                state == 4) {
       if (isFullscreen) {
-        glfwSetWindowMonitor(window.getGLFWWindow(), NULL, oldWinPosX, oldWinPosY, oldWinWidth, oldWinHeight, 0);
+        glfwSetWindowMonitor(window.getGLFWWindow(), NULL, oldWinPosX,
+                             oldWinPosY, oldWinWidth, oldWinHeight, 0);
       } else {
         glfwGetWindowPos(window.getGLFWWindow(), &oldWinPosX, &oldWinPosY);
         glfwGetWindowSize(window.getGLFWWindow(), &oldWinWidth, &oldWinHeight);
-        glfwSetWindowMonitor(window.getGLFWWindow(), primaryMonitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+        glfwSetWindowMonitor(window.getGLFWWindow(), primaryMonitor, 0, 0,
+                             mode->width, mode->height, mode->refreshRate);
       }
       isFullscreen = !isFullscreen;
       state = 0;
