@@ -1,0 +1,8 @@
+src/GameMap.cpp 
+Tile seam bleeding (döşeme çizgisi) sorununu çözmek için UV Padding (iç kenar boşluğu) uygulandı. SetupMesh fonksiyonunda UV hesaplanırken uOffset ve vOffset değerlerine 0.5f padding eklenerek her tile'ın doku başlangıcından yarım piksel içeri girildi. 
+Texture'un kamera hareketinde komşu tile'lardan piksel örneklemesini (taşma sorununu) engellemek adına, Draw fonksiyonundaki texScale değişkeni de her kenardan 0.5f piksel hesaba katılarak daraltıldı.
+
+src/main.cpp 
+Sistem odaklı V-Sync (glfwSwapInterval(1)) kapatılıp yerine program denetimli 144 FPS kilit mantığı eklendi. targetFPS (144.0) ve frameLimit kullanılarak glfwGetTime() tabanlı bir zamanlayıcı oluşturuldu. 
+currentFrame ve lastFrame arasındaki deltaTime farkı kontrol edilerek oyun mantığı render döngüsüne(if (deltaTime >= frameLimit)) bağlandı. Girdi (input) gecikmesini en aza indirmek ve duyarlılığı artırmak için window.PollEvents()
+metodu döngü sınırının dışına alındı (hareketi pürüzsüzleştiriyor). Ayrıca player.Update ve camera.Inputs metotlarına gönderilen double tipindeki deltaTime veri kaybı uyarılarını gidermek için (float)deltaTime olacak şekilde cast edildi.

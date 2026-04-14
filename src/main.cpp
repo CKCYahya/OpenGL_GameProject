@@ -87,9 +87,6 @@ int main() {
   ImGui_ImplOpenGL3_Init("#version 330");
 
   int state = 0;
-
-  float lastFrame = 0.0f;
-  float deltaTime = 0.0f;
   GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
   const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
   bool isFullscreen = false;
@@ -99,10 +96,15 @@ int main() {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   Panel panel;
-  glfwSwapInterval(1);
+  glfwSwapInterval(0);
+  const double targetFPS = 144.0;
+  const double frameLimit = 1.0 / targetFPS;
+  double lastFrame = glfwGetTime();
+  double deltaTime = 0.0;
   while (!window.ShouldClose()) {
-    float currentFrame = (float)glfwGetTime();
+    double currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
+    if (deltaTime >= frameLimit) {
     lastFrame = currentFrame;
 
     glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
@@ -122,7 +124,7 @@ int main() {
     glViewport(0, 0, winWidth, winHeight);
 
     // Update Player
-    player.Update(window.getGLFWWindow(), deltaTime, gameMap);
+    player.Update(window.getGLFWWindow(), (float)deltaTime, gameMap);
 
     // Toggle Camera Mode ("C" key)
     if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_C) == GLFW_PRESS) {
@@ -185,7 +187,7 @@ int main() {
 
     // Update Camera
     camera.Inputs(
-        window.getGLFWWindow(), deltaTime, player.Position,
+        window.getGLFWWindow(), (float)deltaTime, player.Position,
         glm::vec4(-gameMap.worldWidth / 2.0f, -gameMap.worldHeight / 2.0f,
                   gameMap.worldWidth / 2.0f, gameMap.worldHeight / 2.0f));
 
@@ -243,6 +245,7 @@ int main() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     window.SwapBuffers();
+    }
     window.PollEvents();
   }
 
