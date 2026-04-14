@@ -4,42 +4,20 @@
 void Fishing::Catch(Player &player,
                    std::map<int, std::unique_ptr<Items>> &itemList,
                    GameMap &gameMap) {
-    int chances = rand() % 100;
-    int itemID = -1;
-    std::string itemName = "";
-    if(waterType == 2014){
-        if(chances < 25){
-            itemID = 86;
-            itemName = "palamut";
-        }
-        else{
-            itemID = 87;
-            itemName = "levrek";
-        }
-    } else if(waterType == 2015){
-        if(chances < 50){
-            itemID = 88;
-            itemName = "istavrit";
-        }
-        else{
-            itemID = 89;
-            itemName = "uskumru";
-        }
-    } else if(waterType == 2016){
-        if(chances < 5){
-            itemID = 90;
-            itemName = "lufer";
-        }
-        else{
-            itemID = 87;
-            itemName = "levrek";
-        }
+    auto it = fishingLootTable.find(waterType);
+    
+    if (it == fishingLootTable.end()) {
+        return; 
     }
 
-    if (itemID != -1) {
-        Items::AddItem(player, itemID, itemName);
+    int chances = rand() % 100;
+    
+    for (const auto& loot : it->second) {
+        if (chances < loot.maxChance) {
+            Items::AddItem(player, loot.itemID, loot.itemName);
+            break;
+        }
     }
-    return;   
 
 } 
 

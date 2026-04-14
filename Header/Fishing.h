@@ -7,7 +7,19 @@
 #include <map>
 #include <memory>
 #include <GLFW/glfw3.h>
+#include <unordered_map>
 
+struct FishLoot {
+    int maxChance;
+    int itemID;
+    std::string itemName;
+};
+
+static const std::unordered_map<int, std::vector<FishLoot>> fishingLootTable = {
+    {2014, { {25, 86, "palamut"}, {100, 87, "levrek"} }},
+    {2015, { {50, 88, "istavrit"}, {100, 89, "uskumru"} }},
+    {2016, { {35, 90, "lufer"},    {100, 87, "levrek"} }}
+};
 
 enum class States {
   AVAILABLE,

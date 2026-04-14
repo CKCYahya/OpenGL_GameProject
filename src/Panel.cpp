@@ -35,11 +35,18 @@ void Panel::Update(Window &window, Player &player) {
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
     if (player.slots[i].atlasID != 0) {
       ImTextureID texID = (ImTextureID)(intptr_t)player.slots[i].atlasID;
+      ImGui::SetWindowFontScale(1.5f);
       if (ImGui::ImageButton(std::to_string(i).c_str(), texID,
                              ImVec2(slotSize, slotSize), player.slots[i].uv0,
                              player.slots[i].uv1)) {
         player.selectedSlot = i;
         std::cout << "Slot " << i << " (Esya) tiklandi!" << std::endl;
+      }
+      if (player.slots[i].count >= 1) {
+        ImDrawList* draw_list = ImGui::GetWindowDrawList();
+        std::string countText = std::to_string(player.slots[i].count);
+        ImVec2 textPos = ImVec2(ImGui::GetItemRectMax().x - 15.0f, ImGui::GetItemRectMax().y - 15.0f);
+        draw_list->AddText(textPos, IM_COL32(255, 255, 255, 255), countText.c_str());
       }
     } else {
       // Boss ise normal Button
