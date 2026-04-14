@@ -1,4 +1,5 @@
 #include "../Header/Camera.h"
+#include "../Header/Fishing.h"
 #include "../Header/GameMap.h"
 #include "../Header/Items.h"
 #include "../Header/Panel.h"
@@ -6,11 +7,9 @@
 #include "../Header/Shader.h"
 #include "../Header/Texture.h"
 #include "../Header/Window.h"
-#include "../Header/Fishing.h"
 #include "../libs/imgui/backends/imgui_impl_glfw.h"
 #include "../libs/imgui/backends/imgui_impl_opengl3.h"
 #include "../libs/imgui/imgui.h"
-#include <iostream>
 
 using json = nlohmann::json;
 
@@ -154,8 +153,9 @@ int main() {
       player.dropItem(player.selectedSlot, itemList);
     }
 
-    if (player.slots[player.selectedSlot].itemID == 0){
-      fishingSys.Update(window.getGLFWWindow(), deltaTime, player, itemList, gameMap);
+    if (player.slots[player.selectedSlot].itemID == 0) {
+      fishingSys.Update(window.getGLFWWindow(), deltaTime, player, itemList,
+                        gameMap);
     }
 
     // Update Camera
