@@ -195,6 +195,41 @@ void Player::Draw(Shader &shader) {
 
   vao->Bind();
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+  if (this->selectedSlot != -1 && this->slots[selectedSlot].itemID != -1 &&
+      state == State::IDLE) {
+    glm::mat4 itemModel = glm::mat4(1.0f);
+
+    if (direction == 0) {
+      handposition = Position + glm::vec3(-size * 0.35f, -size * 0.2f, 0.0f);
+      itemModel = glm::translate(itemModel, handposition);
+      itemModel = glm::scale(itemModel, glm::vec3(0.3f, 0.3f, 0.3f));
+    } else if (direction == 1) {
+      handposition = Position + glm::vec3(size * 0.35f, -size * 0.2f, -0.2f);
+      itemModel = glm::translate(itemModel, handposition);
+      itemModel = glm::scale(itemModel, glm::vec3(-0.3f, 0.3f, -0.3f));
+    } else if (direction == 2) {
+      handposition = Position + glm::vec3(-size * 0.4f, -size * 0.2f, 0.0f);
+      itemModel = glm::translate(itemModel, handposition);
+      itemModel = glm::scale(itemModel, glm::vec3(0.3f, 0.3f, 0.3f));
+    } else if (direction == 3) {
+      handposition = Position + glm::vec3(-size * 0.2f, -size * 0.2f, 0.0f);
+      itemModel = glm::translate(itemModel, handposition);
+      itemModel = glm::scale(itemModel, glm::vec3(-0.3f, 0.3f, 0.3f));
+    }
+    glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE,
+                       glm::value_ptr(itemModel));
+    glBindTexture(GL_TEXTURE_2D, this->slots[this->selectedSlot].atlasID);
+    glUniform2f(glGetUniformLocation(shader.ID, "texScale"),
+                (this->slots[this->selectedSlot].uv1.x -
+                 this->slots[this->selectedSlot].uv0.x),
+                (this->slots[this->selectedSlot].uv0.y -
+                 this->slots[this->selectedSlot].uv1.y));
+    glUniform2f(glGetUniformLocation(shader.ID, "texOffset"),
+                this->slots[this->selectedSlot].uv0.x,
+                this->slots[this->selectedSlot].uv1.y);
+    vao->Bind();
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+  }
 }
 
 ImTextureID Player::Interact(Items &item) {

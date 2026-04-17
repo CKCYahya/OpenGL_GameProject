@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-
 class Panel;
 class GameMap;
 class Items;
@@ -49,6 +48,7 @@ public:
   int selectedSlot;
   float ray; // For interaction raycasting
   Animations *walkAnim;
+  glm::vec3 handposition;
   // Graphics
   std::unique_ptr<Texture> texUp;
   std::unique_ptr<Texture> texDown;
