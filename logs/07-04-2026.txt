@@ -1,0 +1,41 @@
+Öğleden önce:
+
+`Header/Menu.h`
+Menü ekranları (Ana Menü, Pause, vb.) arasında geçiş yaparken gelinen son ekranı hafızada tutmak ve "Ayarlar" sekmesinden çıkıldığında tekrar doğru ekrana geri dönebilmek için sisteme `previousState` değişkeni tanımlandı.
+Oyunun o an oynanmakta olup olmadığını belirlemek ve `Menu::Draw` çizimlerinde Ana Menü / Pause Menüsü sınırlandırmasını yönetmek adına `isGameStarted` mantıksal bayrağı (bool) eklendi.
+
+`src/Menu.cpp`
+Menü ekranlarının klasik, sürüklenebilir ufak Windows pencereleri gibi davranması yerine tüm alanını kaplayan  bir oyun arayüzü olması için ImGui çizimlerine `ImGuiWindowFlags_NoTitleBar`, `NoResize`, `NoMove` bayrakları eklendi ve `SetNextWindowPos`/`Size` komutlarıyla ekrana tam oturtuldu.
+Oyun devam ederken çalışacak ayrı bir `Pause` menüsü durumu oluşturuldu. İçerisine oyuna devam etmeyi sağlayan, veya ana ekrana dönülüp oyunu durduran "BackToMainMenu" butonu eklendi.
+Oyunun kapatılması emrinin menüden `EXIT`'e basıldığı an direkt olarak Menü sınıfı içinden halledilmesi sağlandı.
+
+`src/main.cpp`
+Menü sınıfının while döngüsüne entegrasyonu sağlandı.
+
+`CMakeLists.txt`
+Menü sınıfının CMakeLists.txt dosyasına entegrasyonu sağlandı.
+
+`image/menu.png`
+Menü arkaplanı için menu.png dosyası eklendi.
+
+Öğleden sonra:
+
+`Header/Menu.h`
+Oyunu kaydetmek ve yüklemek için `SaveGame` ve `LoadGame` metodları sıfırdan eklendi. `SaveGame` fonksiyonu parametre olarak o anki oyun durumunu alabilmek adına `Player* player`, `Camera* camera` sınıflarını ve tüm objeleri kapsayan `std::map<int, std::unique_ptr<Items>>* itemList` listesini alacak; ayrıca verilerin formatlı kayıt edileceği dizini belirtebilmek amacıyla `const char* filename` argümanını kullanacak şekilde tasarlandı.
+
+`src/Menu.cpp`
+`SaveGame` fonksiyonu sıfırdan yazılarak işlevsel hale getirildi. Fonksiyon, nlohmann::json kütüphanesini kullanarak Player, Camera ve Item verilerini (herbiri için ayrı dizayn edilen kısımlardaki kendi `ToJson` fonksiyonları aracılığıyla) derler ve dışarıdan `filename` argümanıyla verilen hedefe standart bir `.json` formatında yazar.
+`LoadGame` metodu, oyunu dış bir JSON dosyasından okuyup sınıflara (FromJson parametreleri ile) aktarmak üzerine kodlandı, ancak projenin diğer sınıflarında bahsi geçen okuma (`FromJson`) metotları henüz oluşturulmadığı için kodun derlenip diğer yerlerin test edilmesini engellememesi amacıyla içi geçici olarak yorum satırına (comment-out) alındı.
+
+`src/main.cpp`
+Menü sınıfının while döngüsüne entegrasyonu sağlandı.
+
+`src/Camera.cpp`
+Oyunun mevcut kamera durumunu (pozisyon, mod ve zoom miktarı) nlohmann JSON objesine çevirip döndüren `Camera::ToJson` fonksiyonu sıfırdan kodlandı. `nlohmann::json` kütüphanesinin standart bir özelliği olarak `glm::vec3` veri tipini direkt dönüştürememesinden kaynaklanacak derleme hatalarını önlemek amacıyla, `Position` değişkenini doğrudan eşitlenmek yerine `x`, `y` ve `z` değerleri olarak 3 ayrı özelliğe parçalanıp manuel dizilerek Json'a eklendi.
+
+`src/Items.cpp`
+Oyun haritasında bulunan, yerde duran veya aktif/pasif olan tüm objelerin o anki durumlarını kaydedebilmek için JSON nesnesi üreten `Items::ToJson` fonksiyonu sıfırdan yazıldı. Bu fonksiyonun mevcut bütün objelere tek tek ulaşabilmesi gerektiğinden ötürü `Items` objesi yerine parametre olarak oyundaki tüm eşyaları tutan dış harita veri yapısı (`std::map<int, std::unique_ptr<Items>> &itemList`) mecbur kılınarak verildi. Bu sayede fonksiyon, JSON nesnesinin içindeki `items` array'ine döngü aracılığıyla Listedeki kimliği, adı, texture offsetleri ve koordinatını doldurabilmekte.
+Kamera fonksiyonundaki duruma benzer şekilde, `glm::vec3` otomatik dönüştürülemediğinden ötürü projenin derlemesini bozmamak için her objenin `position` değişkeninin JSON'a aktarımı x, y ve z bileşenlerine ayrılarak yazıldı.
+
+`Header/Items.h`
+Save sisteminin `Items.cpp` verilerine erişip onları dışarı aktarması için tasarlanan bütün map döngüsü listesini hedefleyen `Items::ToJson` fonksiyonunun metod başlığı/deklarasyonu eklendi. Yalnızca bir nesnenin değil, referans aracılığı ile eşya listesinin aktarımını sağlayacak parametreler fonksiyon başlığına tanımlandı.

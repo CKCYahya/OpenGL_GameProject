@@ -55,5 +55,5 @@ public:
                             int slot);
 };
 
-inline std::vector<std::string> images = {"spritesheet_32x32", "fishing rod"};
+extern std::vector<std::string> images;
 #endif // ITEMS_H
