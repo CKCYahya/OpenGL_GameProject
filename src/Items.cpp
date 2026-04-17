@@ -16,6 +16,7 @@
 
 std::vector<glm::vec2> Items::atlasWH;
 std::vector<std::shared_ptr<Texture>> Items::loadedAtlases;
+std::vector<std::string> images = {"spritesheet_32x32", "fishing rod"};
 
 Items::Items(const std::string &name, const glm::vec3 &position)
     : name(name), position(position) {

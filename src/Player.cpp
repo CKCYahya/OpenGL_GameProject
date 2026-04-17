@@ -10,6 +10,7 @@
 
 Player::Player(glm::vec3 startPos, float size, float speed)
     : Position(startPos), size(size), speed(speed), direction(0) {
+  walkAnim = new Animations(8, 0.1f, 4, 2);
   selectedSlot = -1;
   slotAmount = sizeof(this->slots) / sizeof(this->slots[0]);
   interactionRadius =
@@ -50,6 +51,14 @@ Player::~Player() {
     texLeft->Delete();
   if (texRight)
     texRight->Delete();
+  if (texWalkUp)
+    texWalkUp->Delete();
+  if (texWalkDown)
+    texWalkDown->Delete();
+  if (texWalkLeft)
+    texWalkLeft->Delete();
+  if (texWalkRight)
+    texWalkRight->Delete();
 }
 
 void Player::LoadAssets(Shader &shader) {
@@ -64,6 +73,17 @@ void Player::LoadAssets(Shader &shader) {
                                       GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
   texRight = std::make_unique<Texture>("image/right.png", GL_TEXTURE_2D,
                                        GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+  texWalkDown =
+      std::make_unique<Texture>("image/walk-down.png", GL_TEXTURE_2D,
+                                GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+  texWalkUp = std::make_unique<Texture>("image/walk-up.png", GL_TEXTURE_2D,
+                                        GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+  texWalkLeft =
+      std::make_unique<Texture>("image/walk-left.png", GL_TEXTURE_2D,
+                                GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+  texWalkRight =
+      std::make_unique<Texture>("image/walk-right.png", GL_TEXTURE_2D,
+                                GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
 }
 
 void Player::Update(GLFWwindow *window, float dt, GameMap &gameMap) {
@@ -89,6 +109,12 @@ void Player::Update(GLFWwindow *window, float dt, GameMap &gameMap) {
     direction = 3; // Right
     state = State::MOVING;
   }
+  if (state == State::MOVING) {
+    walkAnim->Update(dt);
+  }
+  if (state == State::IDLE) {
+    walkAnim->currentFrame = 0;
+  }
 
   float halfSize = size / 2.0f;
 
@@ -109,7 +135,6 @@ void Player::Update(GLFWwindow *window, float dt, GameMap &gameMap) {
       Position.y = nextPos.y;
     }
   }
-  
 
   if (state == State::MOVING && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS &&
       glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS &&
@@ -134,20 +159,32 @@ void Player::Update(GLFWwindow *window, float dt, GameMap &gameMap) {
 }
 
 void Player::Draw(Shader &shader) {
-
-  glUniform2f(glGetUniformLocation(shader.ID, "texScale"), 1.0f, 1.0f);
-  glUniform2f(glGetUniformLocation(shader.ID, "texOffset"), 0.0f, 0.0f);
-
-  if (direction == 0 && texDown)
-    texDown->Bind();
-  else if (direction == 1 && texUp)
-    texUp->Bind();
-  else if (direction == 2 && texLeft)
-    texLeft->Bind();
-  else if (direction == 3 && texRight)
-    texRight->Bind();
-  else if (texDown)
-    texDown->Bind();
+  if (state == State::MOVING) {
+    glm::vec2 uv0, uv1;
+    walkAnim->GetUVCoordinates(uv0, uv1);
+    glUniform2f(glGetUniformLocation(shader.ID, "texScale"), uv1.x - uv0.x,
+                uv1.y - uv0.y);
+    glUniform2f(glGetUniformLocation(shader.ID, "texOffset"), uv0.x, uv0.y);
+    if (direction == 0 && texWalkDown)
+      texWalkDown->Bind();
+    else if (direction == 1 && texWalkUp)
+      texWalkUp->Bind();
+    else if (direction == 2 && texWalkLeft)
+      texWalkLeft->Bind();
+    else if (direction == 3 && texWalkRight)
+      texWalkRight->Bind();
+  } else if (state == State::IDLE) {
+    glUniform2f(glGetUniformLocation(shader.ID, "texScale"), 1.0f, 1.0f);
+    glUniform2f(glGetUniformLocation(shader.ID, "texOffset"), 0.0f, 0.0f);
+    if (direction == 0 && texDown)
+      texDown->Bind();
+    else if (direction == 1 && texUp)
+      texUp->Bind();
+    else if (direction == 2 && texLeft)
+      texLeft->Bind();
+    else if (direction == 3 && texRight)
+      texRight->Bind();
+  }
 
   // Create Model Matrix
   playerModel = glm::mat4(1.0f);

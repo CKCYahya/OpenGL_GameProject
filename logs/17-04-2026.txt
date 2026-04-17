@@ -1,0 +1,14 @@
+`Header/Animations.h` & `src/Animations.cpp`
+Oyuncuların ve diğer objelerin animasyon karelerini grid tabanlı tutmak için yeni bir sınıf oluşturuldu. Sınıf, spritesheet'lerin `sütun` ve `satır` sayılarını alarak `Update()` üzerinden zaman akışını kontrol ediyor ve `GetUVCoordinates()` fonksiyonu aracılığıyla doğru karenin OpenGL UV köşe koordinatlarını üretiyor.
+
+`Header/Player.h` & `src/Player.cpp`
+Karakterin yönlere göre farklı resimlerini tutacak 4 yeni hareket texture pointer'ı ile `walkAnim` işaretçisi eklendi. `Update` metodu içinde hareket (`MOVING`) halindeyken animasyon zamanlayıcısı ilerletilecek şekilde sisteme bağlandı. `Draw` fonksiyonu güncellenerek yürüme esnasında shader'a `glGetUniformLocation` üzerinden `texScale` ve `texOffset` uniformları dinamik UV değerleriyle geçerek spritesheet'in ekranda doğru renderlanması sağlandı.
+
+`src/Texture.cpp`
+Resim yüklerken `stbi_load` fonksiyonundaki bileşen algılayıcısı (req_comp) `0`'dan `4`'e (`STBI_rgb_alpha`) sabitlendi. Daha önce 3 kanallı (RGB) ve saydamlıksız çıkarılmış spritesheet'ler OpenGL `GL_RGBA` okuyucusuna ters düşüp alpha kanalında hata yaratıyor ve karakterin yürüdüğünde saydam (görünmez) sanılıp Fragment Shader'daki `discard` satırına takılmasına neden oluyordu, bu sayede kökten çözüldü.
+
+`CMakeLists.txt`
+Eski GCC(MinGW) versiyonunda C++17 zorunluluğunda `<optional>` derleyici hatası alındığından JSON kütüphanesi çökmelerini engellemek amacıyla, proje genel kullanım olan `C++14` standartına düşürülerek başarıyla derlendi.
+
+`Header/Items.h` & `src/Items.cpp`
+`CMakeLists` revizyonu nedeniyle `Items.h` içerisinde C++17'ye ait `inline std::vector` hatası çıkmıştı. Bunu standart derlemeye döndürmek için ilgili değişken `extern` yapılarak global hale getirildi ve başlatılması `Items.cpp` içerisine taşındı.

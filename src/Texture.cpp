@@ -1,4 +1,4 @@
-﻿#include "Texture.h"
+#include "Texture.h"
 #include <iostream>
 Texture::Texture(const char *image, GLenum texType, GLenum slot, GLenum format,
                  GLenum pixelType) {
@@ -7,8 +7,8 @@ Texture::Texture(const char *image, GLenum texType, GLenum slot, GLenum format,
 
   // Stores the width, height, and the number of color channels of the image
 
-  // Reads the image from a file and stores it in bytes
-  unsigned char *bytes = stbi_load(image, &width, &height, &channels, 0);
+  // Force STBI to load an alpha channel even if the image is RGB, solving alpha discard bugs
+  unsigned char *bytes = stbi_load(image, &width, &height, &channels, 4);
   if (!bytes) {
     std::cout << "Failed to load texture: " << image << std::endl;
     // std::cout << stbi_failure_reason() << std::endl; // If header available

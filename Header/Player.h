@@ -1,16 +1,18 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "Animations.h"
+#include "Items.h"
 #include "glad/glad.h"
 #include "glfw/glfw3.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "imgui.h"
-#include "Items.h"
 #include <memory>
 #include <string>
 #include <vector>
+
 
 class Panel;
 class GameMap;
@@ -20,6 +22,7 @@ class Shader;
 class VAO;
 class VBO;
 class EBO;
+class Animations;
 
 struct InventorySlot {
   int itemID = -1;    // -1 ise boş kabul edilir
@@ -45,11 +48,16 @@ public:
   int slotAmount;
   int selectedSlot;
   float ray; // For interaction raycasting
+  Animations *walkAnim;
   // Graphics
   std::unique_ptr<Texture> texUp;
   std::unique_ptr<Texture> texDown;
   std::unique_ptr<Texture> texLeft;
   std::unique_ptr<Texture> texRight;
+  std::unique_ptr<Texture> texWalkUp;
+  std::unique_ptr<Texture> texWalkDown;
+  std::unique_ptr<Texture> texWalkLeft;
+  std::unique_ptr<Texture> texWalkRight;
 
   std::unique_ptr<VAO> vao;
   std::unique_ptr<VBO> vbo;
