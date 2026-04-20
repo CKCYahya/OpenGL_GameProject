@@ -73,6 +73,7 @@ public:
   void dropItem(int selectedSlot,
                 std::map<int, std::unique_ptr<Items>> &itemList);
   void fishing();
+  void drawItem(Shader &shader);
 };
 
 #endif
