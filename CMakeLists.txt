@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(GameProject VERSION 1.0)
 
 # C++ Standartları
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -88,4 +88,19 @@ target_link_libraries(GameProject PRIVATE
     stb_image
     imgui
     ${CMAKE_DL_LIBS} 
+)
+
+# Visual Studio debugger çalışma dizinini exe'nin bulunduğu klasöre ayarla
+set_target_properties(GameProject PROPERTIES
+    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:GameProject>"
+)
+
+# Build sonrası asset'leri exe'nin yanına kopyala
+add_custom_command(TARGET GameProject POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/image $<TARGET_FILE_DIR:GameProject>/image
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/shaders $<TARGET_FILE_DIR:GameProject>/shaders
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/newmap.json $<TARGET_FILE_DIR:GameProject>/newmap.json
 )

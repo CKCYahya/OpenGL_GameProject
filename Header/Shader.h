@@ -1,6 +1,6 @@
 #ifndef SHADER_CLASS_H
 #define SHADER_CLASS_H
-#include "../libs/glad/include/glad/glad.h"
+#include "glad/glad.h"
 
 #include <cerrno>
 #include <fstream>

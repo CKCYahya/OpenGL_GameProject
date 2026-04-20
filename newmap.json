@@ -170,16 +170,16 @@
                  "y":1345.33
                 }, 
                 {
-                 "gid":3144,
+                 "gid":3145,
                  "height":32,
-                 "id":31,
+                 "id":32,
                  "name":"",
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":32,
-                 "x":320,
-                 "y":1345.33333333333
+                 "x":14,
+                 "y":1328
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -188,7 +188,7 @@
          "y":0
         }],
  "nextlayerid":4,
- "nextobjectid":32,
+ "nextobjectid":33,
  "orientation":"orthogonal",
  "renderorder":"left-up",
  "tiledversion":"1.11.2",
@@ -197,7 +197,7 @@
         {
          "columns":53,
          "firstgid":1,
-         "image":"..\/texture.png",
+         "image":"GameProject\/image\/texture.png",
          "imageheight":1184,
          "imagewidth":1696,
          "margin":0,
@@ -603,7 +603,7 @@
         {
          "columns":37,
          "firstgid":1962,
-         "image":"..\/renkler.png",
+         "image":"GameProject\/image\/renkler.png",
          "imageheight":827,
          "imagewidth":1188,
          "margin":0,
@@ -653,7 +653,7 @@
         {
          "columns":16,
          "firstgid":2887,
-         "image":"..\/..\/..\/..\/Downloads\/spritesheet_32x32.png",
+         "image":"GameProject\/image\/spritesheet_32x32.png",
          "imageheight":512,
          "imagewidth":512,
          "margin":0,
@@ -746,7 +746,7 @@
         {
          "columns":1,
          "firstgid":3143,
-         "image":"image\/fishing rod.png",
+         "image":"GameProject\/image\/fishing rod.png",
          "imageheight":32,
          "imagewidth":32,
          "margin":0,
@@ -767,8 +767,8 @@
          "tilewidth":32
         }, 
         {
-         "firstgid":3144,
-         "source":"..\/fishing rod.tsx"
+         "firstgid":3145,
+         "source":"fishing rod.tsx"
         }],
  "tilewidth":32,
  "type":"map",

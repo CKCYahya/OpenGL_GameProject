@@ -1,4 +1,4 @@
-﻿#include "../Header/Shader.h"
+﻿#include "Shader.h"
 
 // Reads a text file and outputs a string with everything in the text file
 // Shader.cpp

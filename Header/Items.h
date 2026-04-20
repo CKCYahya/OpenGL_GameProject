@@ -1,14 +1,14 @@
 #ifndef ITEMS_H
 #define ITEMS_H
 
-#include "../libs/glad/include/glad/glad.h"
-#include "../libs/glm/glm.hpp"
+#include "glad/glad.h"
+#include "glm/glm.hpp"
 #include <map>
 #include <memory>
 #include <string>
 
-#include "../include/nlohmann/json.hpp"
-#include "../libs/glm/gtc/type_ptr.hpp"
+#include "nlohmann/json.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include "Camera.h"
 
 using json = nlohmann::json;
@@ -58,5 +58,5 @@ public:
   static void AddItem(Player &player, int itemID, std::string itemName);
 };
 
-inline std::vector<std::string> images = {"spritesheet_32x32", "fishing rod"};
+extern std::vector<std::string> images;
 #endif // ITEMS_H

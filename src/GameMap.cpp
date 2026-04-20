@@ -1,4 +1,4 @@
-#include "../Header/GameMap.h"
+#include "GameMap.h"
 
 GameMap::GameMap(const char *mapFile) {
   // Load Map Data

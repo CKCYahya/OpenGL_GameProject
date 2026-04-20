@@ -64,3 +64,20 @@ After the build process is complete, launch the generated executable:
 ```bash
 ./GameProject
 ```
+
+## Game Mechanics and Controls
+
+The project features a variety of gameplay systems including inventory management, character movement, and advanced camera handling:
+
+### Player & Inventory
+* **`W`, `A`, `S`, `D`**: Navigate the character around the map.
+* **`E`**: Interact with nearby objects or pick them up into your inventory.
+* **`1` to `5`**: Select your active inventory slot.
+* **`G`**: Drop the item currently held in your active slot back to the ground.
+
+### Camera & Display
+* **`C`**: Toggle the camera perspective between "Free View" and "Player Locked" modes.
+* **`F12`**: Seamlessly switch between Fullscreen and Windowed mode.
+* **Mouse Scroll Wheel**: Zoom the game view in and out.
+* **Left Mouse Click**: Capture the cursor to the game window. When captured, moving the mouse to the edges of the screen will glide the camera across the map.
+* **Right Mouse Click**: Release the cursor from the game bounds, enabling free interaction with ImGui panels and the rest of the OS.

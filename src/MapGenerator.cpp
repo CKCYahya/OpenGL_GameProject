@@ -1,5 +1,5 @@
-#include "../Header/MapGenerator.h"
-#include "../libs/glm/gtc/noise.hpp"
+#include "MapGenerator.h"
+#include "glm/gtc/noise.hpp"
 
 constexpr float scale = 0.05f;
 

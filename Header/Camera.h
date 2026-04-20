@@ -2,15 +2,15 @@
 #define CAMERA_CLASS_H
 #define GLM_ENABLE_EXPERIMENTAL
 
-#include "../libs/glad/include/glad/glad.h"
-#include "../libs/glfw/include/glfw/glfw3.h"
-#include "../libs/glm/glm.hpp"
-#include "../libs/glm/gtc/matrix_transform.hpp"
-#include "../libs/glm/gtc/type_ptr.hpp"
-#include "../libs/glm/gtx/rotate_vector.hpp"
-#include "../libs/glm/gtx/vector_angle.hpp"
+#include "glad/glad.h"
+#include "glfw/glfw3.h"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include "glm/gtx/rotate_vector.hpp"
+#include "glm/gtx/vector_angle.hpp"
 
-#include "../Header/Shader.h"
+#include "Shader.h"
 
 enum CameraMode { CAMERA_FREE, CAMERA_LOCKED };
 

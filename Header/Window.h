@@ -1,9 +1,9 @@
 #ifndef WINDOW_CLASS_H
 #define WINDOW_CLASS_H
 
-#include "../libs/glad/include/glad/glad.h"
-#include "../libs/glfw/include/glfw/glfw3.h"
-#include "../include/nlohmann/json.hpp"
+#include "glad/glad.h"
+#include "glfw/glfw3.h"
+#include "nlohmann/json.hpp"
 using json = nlohmann::json;
 
 class Window {

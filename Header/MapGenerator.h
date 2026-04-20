@@ -1,7 +1,7 @@
 #ifndef MAP_GENERATOR_H
 #define MAP_GENERATOR_H
 
-#include "../libs/glm/glm.hpp"
+#include "glm/glm.hpp"
 #include <vector>
 
 enum TileType { TILE_WATER, TILE_SAND, TILE_SOIL, TILE_GRASS };

@@ -1,13 +1,13 @@
-#include "../Header/Items.h"
-#include "../Header/EBO.h"
-#include "../Header/GameMap.h"
-#include "../Header/Panel.h"
-#include "../Header/Player.h"
-#include "../Header/Shader.h"
-#include "../Header/Texture.h"
-#include "../Header/VAO.h"
-#include "../Header/VBO.h"
-#include "../Header/Window.h"
+#include "Items.h"
+#include "EBO.h"
+#include "GameMap.h"
+#include "Panel.h"
+#include "Player.h"
+#include "Shader.h"
+#include "Texture.h"
+#include "VAO.h"
+#include "VBO.h"
+#include "Window.h"
 #include <cstdlib>
 #include <iostream>
 #include <memory>
@@ -16,6 +16,7 @@
 
 std::vector<glm::vec2> Items::atlasWH;
 std::vector<std::shared_ptr<Texture>> Items::loadedAtlases;
+std::vector<std::string> images = {"spritesheet_32x32", "fishing rod"};
 
 Items::Items(const std::string &name, const glm::vec3 &position, int itemID)
     : name(name), position(position), ID(itemID) {
