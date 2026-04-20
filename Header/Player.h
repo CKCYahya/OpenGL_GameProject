@@ -1,16 +1,17 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "Items.h"
 #include "glad/glad.h"
 #include "glfw/glfw3.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "imgui.h"
-#include "Items.h"
 #include <memory>
 #include <string>
 #include <vector>
+
 
 class Panel;
 class GameMap;

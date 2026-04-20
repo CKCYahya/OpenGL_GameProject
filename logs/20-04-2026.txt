@@ -1,0 +1,5 @@
+src/Panel.cpp 35-37, 57-59
+Karakterin seçili slotu if bloğu kullanılarak kontrol edilerek, seçili slotun arka plan renginin PushStyleColor ile değişmesi sağlandı. Çizimlerin ardından PopStyleColor ile eski rengine döndürülmesi sağlandı.
+
+src/main.cpp 253-254
+Minimap içerisindeki kırmızı noktanın suya aşağıdan yürürken cyan renginde görünürken diğer yönlerde cyan renkte görünmemesi sorunu çözüldü. Oyunda collision kontrolü karakterin ayaklarına göre yapılırken Minimap için karakterin merkezine göre kontrol yapılıyordu. Bu durumun önüne geçmek için karakterin ayaklarının olduğu yere göre collision kontrolü yapıldı.

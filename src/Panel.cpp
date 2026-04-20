@@ -32,6 +32,9 @@ void Panel::Update(Window &window, Player &player,
                    ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove);
 
   for (int i = 0; i < slotCount; i++) {
+    if (player.selectedSlot == i) {
+      ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+    }
     ImGui::PushID(i);
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
     if (player.slots[i].atlasID != 0) {
@@ -51,6 +54,9 @@ void Panel::Update(Window &window, Player &player,
     }
     ImGui::PopStyleVar();
     ImGui::PopID();
+    if (player.selectedSlot == i) {
+      ImGui::PopStyleColor();
+    }
 
     if (i < slotCount - 1) {
       ImGui::SameLine();

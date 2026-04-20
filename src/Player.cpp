@@ -109,7 +109,6 @@ void Player::Update(GLFWwindow *window, float dt, GameMap &gameMap) {
       Position.y = nextPos.y;
     }
   }
-  
 
   if (state == State::MOVING && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS &&
       glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS &&

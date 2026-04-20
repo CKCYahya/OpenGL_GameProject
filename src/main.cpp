@@ -250,7 +250,8 @@ int main() {
       panel.Update(window, player, itemList);
 
       // --- MINIMAP ---
-      gameMap.DrawMinimap(player.Position, camera, winWidth, winHeight);
+      glm::vec3 minimapPos = player.Position - glm::vec3(0.0f, player.size * 0.6f, 0.0f);
+      gameMap.DrawMinimap(minimapPos, camera, winWidth, winHeight);
       ImGui::Render();
       ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
