@@ -7,9 +7,9 @@
 #include <memory>
 #include <string>
 
-#include "nlohmann/json.hpp"
-#include "glm/gtc/type_ptr.hpp"
 #include "Camera.h"
+#include "glm/gtc/type_ptr.hpp"
+#include "nlohmann/json.hpp"
 
 using json = nlohmann::json;
 class Panel;
@@ -54,6 +54,9 @@ public:
   static Items *searchItems(std::map<int, std::unique_ptr<Items>> &itemList,
                             int slot);
   static nlohmann::json ToJson(std::map<int, std::unique_ptr<Items>> &itemList);
+  static void Reset(std::map<int, std::unique_ptr<Items>> &itemList);
+  static void FromJson(std::map<int, std::unique_ptr<Items>> &itemList,
+                       nlohmann::json j);
 };
 
 extern std::vector<std::string> images;

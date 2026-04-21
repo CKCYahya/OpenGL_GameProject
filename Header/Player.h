@@ -1,13 +1,13 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "Items.h"
 #include "glad/glad.h"
 #include "glfw/glfw3.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "imgui.h"
-#include "Items.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -70,6 +70,8 @@ public:
                 std::map<int, std::unique_ptr<Items>> &itemList);
 
   nlohmann::json ToJson();
+  void Reset();
+  void FromJson(nlohmann::json j);
 };
 
 #endif

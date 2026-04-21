@@ -46,6 +46,8 @@ public:
   void Inputs(GLFWwindow *window, float dt, glm::vec3 targetPos,
               glm::vec4 mapBounds);
   nlohmann::json ToJson();
+  void Reset();
+  void FromJson(nlohmann::json j);
 };
 
 #endif

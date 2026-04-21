@@ -1,0 +1,23 @@
+src/Player.cpp
+Save alma ve yükleme işlemlerinin doğru gerçekleşip gerçekleşmediğini kontrol etmek için player dropItem fonksiyonu düzenlendi.
+Itemler droplandıktan sonra kayboluyordu. Bunun yerine itemler drop edildiğinde sadece sayısını 1 azaltıyoruz. Eğer sayı 0 olursa o zaman itemi siliyoruz.
+fishing branch ile merge yapmadan geçici olarak düzeltildi.
+Player::ToJson ve Player::FromJson metodlarına menü arayüzünde (panelde) eşya resimlerinin görünmez kalmasını (şeffaf render edilmesini) önlemek amacıyla atlasID, uv0 ve uv1 parametrelerinin koda okunup/yazılması eklendi.
+Player::Reset metoduna temizlik aşamasında render hatalarını önlemek için uv0 ve uv1 değerlerinin (ImVec2(0.0f, 0.0f) olarak) sıfırlanması eklendi.
+
+src/Items.cpp
+Items sınıfına drop özelliğini düzeltmek için slotIndex değişkeni -1 olarak initialize edildi.
+Items::FromJson metodunun en başına itemList.clear() işlemi eklendi. Bu sayede LoadGame yapıldığında, eski haritada yer alan öğelerin silinmeden yeni yüklenenlerle birleşip eşyaların çifte kopya render edilmesi sorunu kökten çözüldü.
+
+src/Menu.cpp
+Save alırken save ismini yazmak için kullanılan input alanı için kod okunulabilirliği için newSaveSection fonksiyonuna taşındı.
+newSaveSection fonksiyonu eklendi ve save alma işlemi düzeltildi.
+newSaveSection fonksiyonu ile save almak için butona basıldığında save alma ekranı açılıyor.
+Kullanıcı save ismini yazıp save butonuna bastığında save alma işlemi gerçekleşiyor. Reddedilirse save alma ekranı kapanıyor.
+saveSlotCount değişkeni eklendi ve en fazla 3 save slotu olana kadar kontrol ediliyor.
+GetSaveNames fonksiyonu ile save alma işleminde slot sayısı if bloğu ile kontrol ediliyor.
+Load işlemi tamamlandıktan sonra oyuncunun beklemeden aksiyona dönmesi için state değişkeni START durumuna çekildi ve isGameStarted aktif edildi.
+Save alırken var olan save slotlarından birine tıklanırsa overwrite yapma özelliği eklendi. Kullanıcı "New Save" yerine önceden var olan bir save slotuna tıklarsa, gereksiz isim Input alanı atlanarak direkt o dosyanın üzerine hızlı kayıt alınması sağlandı.
+
+Header/Menu.h
+Save/Load ekranı durum yönetimi için selectedSaveSlot silindi; yerine saveSlotCount ile showSaveConfirm değişkenleri ve newSaveSection fonksiyon prototipi eklendi.

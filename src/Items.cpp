@@ -20,6 +20,7 @@ std::vector<std::string> images = {"spritesheet_32x32", "fishing rod"};
 
 Items::Items(const std::string &name, const glm::vec3 &position)
     : name(name), position(position) {
+  slotIndex = -1;
   float size = 16.0f;
   // Initialize VAO, VBO, EBO for the item
   // Load texture using texturePath
@@ -46,7 +47,11 @@ Items::Items(const std::string &name, const glm::vec3 &position)
   ebo->Unbind();
 }
 
-Items::~Items() { itemTexture->Delete(); }
+Items::~Items() {
+  if (itemTexture) {
+    itemTexture->Delete();
+  }
+}
 
 void Items::Load(Shader &shader, const char *texturePath) {
   itemTexture = std::make_unique<Texture>(
@@ -198,22 +203,40 @@ Items *Items::searchItems(std::map<int, std::unique_ptr<Items>> &itemList,
 }
 
 nlohmann::json Items::ToJson(std::map<int, std::unique_ptr<Items>> &itemList) {
-    nlohmann::json j;
-    j["items"] = nlohmann::json::array();
-    for(auto& item : itemList) {
-        nlohmann::json itemJson;
-        itemJson["ID"] = item.second->ID;
-        itemJson["name"] = item.second->name;
-        itemJson["position"]["x"] = item.second->position.x;
-        itemJson["position"]["y"] = item.second->position.y;
-        itemJson["position"]["z"] = item.second->position.z;
-        itemJson["slotIndex"] = item.second->slotIndex;
-        itemJson["value"] = item.second->value;
-        itemJson["atlasIndex"] = item.second->atlasIndex;
-        itemJson["uOffset"] = item.second->uOffset;
-        itemJson["vOffset"] = item.second->vOffset;
-        itemJson["isActive"] = item.second->isActive;
-        j["items"].push_back(itemJson);
-    }
-    return j;
+  nlohmann::json j;
+  j["items"] = nlohmann::json::array();
+  for (auto &item : itemList) {
+    nlohmann::json itemJson;
+    itemJson["ID"] = item.second->ID;
+    itemJson["name"] = item.second->name;
+    itemJson["atlasIndex"] = item.second->atlasIndex;
+    itemJson["position"]["x"] = item.second->position.x;
+    itemJson["position"]["y"] = item.second->position.y;
+    itemJson["position"]["z"] = item.second->position.z;
+    itemJson["slotIndex"] = item.second->slotIndex;
+    itemJson["isActive"] = item.second->isActive;
+    j["items"].push_back(itemJson);
+  }
+  return j;
+}
+
+void Items::Reset(std::map<int, std::unique_ptr<Items>> &itemList) {
+  itemList.clear();
+}
+
+void Items::FromJson(std::map<int, std::unique_ptr<Items>> &itemList,
+                     nlohmann::json j) {
+  itemList.clear();
+  for (auto &item : j["items"]) {
+    auto newItem =
+        std::make_unique<Items>(item["name"], glm::vec3(0.0f, 0.0f, 0.0f));
+    newItem->ID = item["ID"];
+    newItem->atlasIndex = item["atlasIndex"];
+    newItem->position.x = item["position"]["x"];
+    newItem->position.y = item["position"]["y"];
+    newItem->position.z = item["position"]["z"];
+    newItem->slotIndex = item["slotIndex"];
+    newItem->isActive = item["isActive"];
+    itemList[newItem->ID] = std::move(newItem);
+  }
 }
