@@ -210,16 +210,15 @@ int main() {
     // Activate Texture Shader and Update Matrix for entities
     textureShader.Activate();
     camera.updateMatrix(-100.0f, 100.0f, textureShader, "camMatrix");
+    if (!itemList.empty()) {
+      itemList.begin()->second->drawAtlas(textureShader, itemList, winWidth,
+                                          winHeight, camera);
+    }
 
     // Draw Player
     player.Draw(textureShader);
 
     // Draw Items
-
-    if (!itemList.empty()) {
-      itemList.begin()->second->drawAtlas(textureShader, itemList, winWidth,
-                                          winHeight, camera);
-    }
 
     // --- IMGUI RENDER ---
     const float PAD = 10.0f;
