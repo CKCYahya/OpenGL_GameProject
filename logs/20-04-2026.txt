@@ -1,0 +1,16 @@
+src/Item.cpp, src/Player.cpp, src/Camera.cpp
+ToJson fonksiyonlarında json dosyasına kaydedilecek olan verilerin tekrardan gözden geçirilmesi sağlandı.
+Menu içerisinde "back to main menu" butonuna basıldığında oyunun başa dönmesi için Reset fonksiyonları eklendi.
+ToJson fonksiyonlarında olduğu gibi json dosyasından verilerin okunması için FromJson fonksiyonları eklendi.
+
+src/Menu.cpp
+GetSaveNames fonksiyonu filesystem kütüphanesi kullanılarak yenilendi. "saves" adında klasörün olup olmadığı kontrol ediliyor. Eğer klasör yoksa oluşturuluyor.
+Ardından saves klasörünün içindeki tüm json dosyaları okunuyor. Okunan dosyaların isimleri listeye ekleniyor.
+Eğer saves klasöründe hiç dosya yoksa, 3 adet "Slot" oluşturuluyor.
+
+src/Items.cpp
+"back to main menu" butonuna basıldığında oyunun çökmesi sorunu çözüldü. Reset fonksiyonu nullptr silmeye çalışıyordu 
+Bunun için Items sınıfının destructor fonksiyonu nullptr kontrolü eklendi.
+
+NOT: filesystem kütüphanesi eklenebilmesi için derleyici ayarlarından C++17 veya daha üstü bir sürüm seçilmesi gerekiyordu.
+Bunun için gcc versiyonunun yükseltilmesi sağlandı.
