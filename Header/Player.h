@@ -9,6 +9,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "imgui.h"
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -34,7 +35,7 @@ struct InventorySlot {
   ImVec2 uv1;
   int count = 0;
 };
-enum class State { IDLE, MOVING, INTERACTING };
+enum class State { IDLE, MOVING, FISHING };
 
 class Player {
 
@@ -52,6 +53,7 @@ public:
   int selectedSlot;
   float ray; // For interaction raycasting
   Animations *walkAnim;
+  Animations *fishAnim;
   glm::vec3 handposition;
   glm::vec4 rayStart;
   glm::vec4 rayEnd;
@@ -59,14 +61,7 @@ public:
   glm::vec3 newRayStart;
   glm::vec3 newRayEnd;
   // Graphics
-  std::unique_ptr<Texture> texUp;
-  std::unique_ptr<Texture> texDown;
-  std::unique_ptr<Texture> texLeft;
-  std::unique_ptr<Texture> texRight;
-  std::unique_ptr<Texture> texWalkUp;
-  std::unique_ptr<Texture> texWalkDown;
-  std::unique_ptr<Texture> texWalkLeft;
-  std::unique_ptr<Texture> texWalkRight;
+  std::map<std::string, std::vector<std::unique_ptr<Texture>>> textures;
 
   std::unique_ptr<VAO> vao;
   std::unique_ptr<VBO> vbo;
@@ -81,8 +76,24 @@ public:
   ImTextureID Interact(Items &item);
   void dropItem(int selectedSlot,
                 std::map<int, std::unique_ptr<Items>> &itemList);
-  void fishing();
   void drawItem(Shader &shader);
+  void getAnimation(std::string animType, int direction);
 };
 
+// Texture paths ordered by direction: 0=Down, 1=Up, 2=Left, 3=Right
+inline std::vector<std::string> fishingTexturePaths = {
+    "image/fishing-down.png", "image/fishing-up.png", "image/fishing-left.png",
+    "image/fishing-right.png"};
+
+inline std::vector<std::string> walkTexturePaths = {
+    "image/walk-down.png", "image/walk-up.png", "image/walk-left.png",
+    "image/walk-right.png"};
+
+inline std::vector<std::string> idleTexturePaths = {
+    "image/down.png", "image/up.png", "image/left.png", "image/right.png"};
+
+inline std::map<std::string, std::vector<std::string>> texturePaths = {
+    {"fishing", fishingTexturePaths},
+    {"walk", walkTexturePaths},
+    {"idle", idleTexturePaths}};
 #endif

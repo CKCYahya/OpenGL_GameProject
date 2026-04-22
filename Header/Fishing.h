@@ -19,7 +19,7 @@ static const std::unordered_map<int, std::vector<FishLoot>> fishingLootTable = {
     {2015, {{50, 88, "istavrit"}, {100, 89, "uskumru"}}},
     {2016, {{35, 90, "lufer"}, {100, 87, "levrek"}}}};
 
-enum class States { AVAILABLE, NOT_AVAILABLE, FISHING, REELING, CAUGHT };
+enum class States { NOT_AVAILABLE, AVAILABLE, CASTING, WAITING, CAUGHT };
 
 class Fishing {
 public:

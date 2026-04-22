@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include "Fishing.h"
 #include "GameMap.h"
 #include "Items.h"
 #include "Panel.h"
