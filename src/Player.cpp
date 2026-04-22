@@ -10,6 +10,7 @@
 
 Player::Player(glm::vec3 startPos, float size, float speed)
     : Position(startPos), size(size), speed(speed), direction(0) {
+  walkAnim = new Animations(8, 0.1f, 4, 2);
   selectedSlot = -1;
   slotAmount = sizeof(this->slots) / sizeof(this->slots[0]);
   interactionRadius =
@@ -52,6 +53,14 @@ Player::~Player() {
     texLeft->Delete();
   if (texRight)
     texRight->Delete();
+  if (texWalkUp)
+    texWalkUp->Delete();
+  if (texWalkDown)
+    texWalkDown->Delete();
+  if (texWalkLeft)
+    texWalkLeft->Delete();
+  if (texWalkRight)
+    texWalkRight->Delete();
 }
 
 void Player::LoadAssets(Shader &shader) {
@@ -66,6 +75,17 @@ void Player::LoadAssets(Shader &shader) {
                                       GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
   texRight = std::make_unique<Texture>("image/right.png", GL_TEXTURE_2D,
                                        GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+  texWalkDown =
+      std::make_unique<Texture>("image/walk-down.png", GL_TEXTURE_2D,
+                                GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+  texWalkUp = std::make_unique<Texture>("image/walk-up.png", GL_TEXTURE_2D,
+                                        GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+  texWalkLeft =
+      std::make_unique<Texture>("image/walk-left.png", GL_TEXTURE_2D,
+                                GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+  texWalkRight =
+      std::make_unique<Texture>("image/walk-right.png", GL_TEXTURE_2D,
+                                GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
 }
 
 void Player::Update(GLFWwindow *window, float dt, GameMap &gameMap) {
@@ -91,6 +111,12 @@ void Player::Update(GLFWwindow *window, float dt, GameMap &gameMap) {
     direction = 3; // Right
     state = State::MOVING;
   }
+  if (state == State::MOVING) {
+    walkAnim->Update(dt);
+  }
+  if (state == State::IDLE) {
+    walkAnim->currentFrame = 0;
+  }
 
   float halfSize = size / 2.0f;
 
@@ -111,7 +137,6 @@ void Player::Update(GLFWwindow *window, float dt, GameMap &gameMap) {
       Position.y = nextPos.y;
     }
   }
-  
 
   if (state == State::MOVING && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS &&
       glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS &&
@@ -135,10 +160,12 @@ void Player::Update(GLFWwindow *window, float dt, GameMap &gameMap) {
     Position.y = maxY;
 
   // Direction angles: 0=Down(270°), 1=Up(90°), 2=Left(180°), 3=Right(0°)
-  static const float angles[] = { glm::radians(270.0f), glm::radians(90.0f), glm::radians(180.0f), glm::radians(0.0f) };
+  static const float angles[] = {glm::radians(270.0f), glm::radians(90.0f),
+                                 glm::radians(180.0f), glm::radians(0.0f)};
   float angle = angles[direction];
   float rayDistance = size * 2.0f;
-  rayEnd = glm::vec4(cos(angle) * rayDistance, sin(angle) * rayDistance, 0.0f, 1.0f);
+  rayEnd =
+      glm::vec4(cos(angle) * rayDistance, sin(angle) * rayDistance, 0.0f, 1.0f);
 
   newRayStart = glm::vec3(playerModel * rayStart);
   newRayEnd = glm::vec3(playerModel * rayEnd);
@@ -146,20 +173,35 @@ void Player::Update(GLFWwindow *window, float dt, GameMap &gameMap) {
 }
 
 void Player::Draw(Shader &shader) {
-
-  glUniform2f(glGetUniformLocation(shader.ID, "texScale"), 1.0f, 1.0f);
-  glUniform2f(glGetUniformLocation(shader.ID, "texOffset"), 0.0f, 0.0f);
-
-  if (direction == 0 && texDown)
-    texDown->Bind();
-  else if (direction == 1 && texUp)
-    texUp->Bind();
-  else if (direction == 2 && texLeft)
-    texLeft->Bind();
-  else if (direction == 3 && texRight)
-    texRight->Bind();
-  else if (texDown)
-    texDown->Bind();
+  if (direction == 1) {
+    drawItem(shader);
+  }
+  if (state == State::MOVING) {
+    glm::vec2 uv0, uv1;
+    walkAnim->GetUVCoordinates(uv0, uv1);
+    glUniform2f(glGetUniformLocation(shader.ID, "texScale"), uv1.x - uv0.x,
+                uv1.y - uv0.y);
+    glUniform2f(glGetUniformLocation(shader.ID, "texOffset"), uv0.x, uv0.y);
+    if (direction == 0 && texWalkDown)
+      texWalkDown->Bind();
+    else if (direction == 1 && texWalkUp)
+      texWalkUp->Bind();
+    else if (direction == 2 && texWalkLeft)
+      texWalkLeft->Bind();
+    else if (direction == 3 && texWalkRight)
+      texWalkRight->Bind();
+  } else if (state == State::IDLE) {
+    glUniform2f(glGetUniformLocation(shader.ID, "texScale"), 1.0f, 1.0f);
+    glUniform2f(glGetUniformLocation(shader.ID, "texOffset"), 0.0f, 0.0f);
+    if (direction == 0 && texDown)
+      texDown->Bind();
+    else if (direction == 1 && texUp)
+      texUp->Bind();
+    else if (direction == 2 && texLeft)
+      texLeft->Bind();
+    else if (direction == 3 && texRight)
+      texRight->Bind();
+  }
 
   // Create Model Matrix
   playerModel = glm::mat4(1.0f);
@@ -169,6 +211,9 @@ void Player::Draw(Shader &shader) {
                      glm::value_ptr(playerModel));
   vao->Bind();
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+  if (direction != 1) {
+    drawItem(shader);
+  }
 }
 
 ImTextureID Player::Interact(Items &item) {
@@ -222,31 +267,70 @@ void Player::dropItem(int selectedSlot,
       slots[selectedSlot].itemID != -1) {
     int droppedItemID = slots[selectedSlot].itemID;
     Items *item = Items::searchItems(itemList, selectedSlot);
-    
+
     // If not found in the map create a new one
     if (item == nullptr) {
-      static int dropCounter = 100000; 
+      static int dropCounter = 100000;
       int entityID = dropCounter++;
       std::string dropName = slots[selectedSlot].itemName;
-      itemList[entityID] = std::make_unique<Items>(dropName, this->Position, droppedItemID);
+      itemList[entityID] =
+          std::make_unique<Items>(dropName, this->Position, droppedItemID);
       item = itemList[entityID].get();
       item->atlasIndex = Items::GetAtlasIndex(droppedItemID);
     }
 
-    if(slots[selectedSlot].count > 1){
+    if (slots[selectedSlot].count > 1) {
       slots[selectedSlot].count -= 1;
       item->position = this->Position;
-      item->isActive = true;  
-      item->slotIndex = -1;   
+      item->isActive = true;
+      item->slotIndex = -1;
       return;
     }
-    
+
     item->slotIndex = -1;
     item->position = this->Position;
     item->isActive = true;
-    
+
     slots[selectedSlot].itemID = -1;
     slots[selectedSlot].atlasID = 0;
     slots[selectedSlot].count = 0;
+  }
+}
+
+void Player::drawItem(Shader &shader) {
+  if (this->selectedSlot != -1 && this->slots[selectedSlot].itemID != -1 &&
+      state == State::IDLE) {
+    glm::mat4 itemModel = glm::mat4(1.0f);
+
+    if (direction == 0) {
+      handposition = Position + glm::vec3(-size * 0.35f, -size * 0.2f, 0.0f);
+      itemModel = glm::translate(itemModel, handposition);
+      itemModel = glm::scale(itemModel, glm::vec3(0.3f, 0.3f, 0.3f));
+    } else if (direction == 1) {
+      handposition = Position + glm::vec3(size * 0.35f, -size * 0.2f, -0.2f);
+      itemModel = glm::translate(itemModel, handposition);
+      itemModel = glm::scale(itemModel, glm::vec3(-0.3f, 0.3f, -0.3f));
+    } else if (direction == 2) {
+      handposition = Position + glm::vec3(-size * 0.4f, -size * 0.2f, 0.0f);
+      itemModel = glm::translate(itemModel, handposition);
+      itemModel = glm::scale(itemModel, glm::vec3(0.3f, 0.3f, 0.3f));
+    } else if (direction == 3) {
+      handposition = Position + glm::vec3(-size * 0.2f, -size * 0.2f, 0.0f);
+      itemModel = glm::translate(itemModel, handposition);
+      itemModel = glm::scale(itemModel, glm::vec3(-0.3f, 0.3f, 0.3f));
+    }
+    glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE,
+                       glm::value_ptr(itemModel));
+    glBindTexture(GL_TEXTURE_2D, this->slots[this->selectedSlot].atlasID);
+    glUniform2f(glGetUniformLocation(shader.ID, "texScale"),
+                (this->slots[this->selectedSlot].uv1.x -
+                 this->slots[this->selectedSlot].uv0.x),
+                (this->slots[this->selectedSlot].uv0.y -
+                 this->slots[this->selectedSlot].uv1.y));
+    glUniform2f(glGetUniformLocation(shader.ID, "texOffset"),
+                this->slots[this->selectedSlot].uv0.x,
+                this->slots[this->selectedSlot].uv1.y);
+    vao->Bind();
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   }
 }

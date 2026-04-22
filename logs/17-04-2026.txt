@@ -1,0 +1,20 @@
+`Header/Animations.h` & `src/Animations.cpp`
+Oyuncuların ve diğer objelerin animasyon karelerini grid tabanlı tutmak için yeni bir sınıf oluşturuldu. Sınıf, spritesheet'lerin `sütun` ve `satır` sayılarını alarak `Update()` üzerinden zaman akışını kontrol ediyor ve `GetUVCoordinates()` fonksiyonu aracılığıyla doğru karenin OpenGL UV köşe koordinatlarını üretiyor.
+
+`Header/Player.h` & `src/Player.cpp`
+Karakterin yönlere göre farklı resimlerini tutacak 4 yeni hareket texture pointer'ı ile `walkAnim` işaretçisi eklendi. `Update` metodu içinde hareket (`MOVING`) halindeyken animasyon zamanlayıcısı ilerletilecek şekilde sisteme bağlandı. `Draw` fonksiyonu güncellenerek yürüme esnasında shader'a `glGetUniformLocation` üzerinden `texScale` ve `texOffset` uniformları dinamik UV değerleriyle geçerek spritesheet'in ekranda doğru renderlanması sağlandı.
+
+`src/Texture.cpp`
+Resim yüklerken `stbi_load` fonksiyonundaki bileşen algılayıcısı (req_comp) `0`'dan `4`'e (`STBI_rgb_alpha`) sabitlendi. Daha önce 3 kanallı (RGB) ve saydamlıksız çıkarılmış spritesheet'ler OpenGL `GL_RGBA` okuyucusuna ters düşüp alpha kanalında hata yaratıyor ve karakterin yürüdüğünde saydam (görünmez) sanılıp Fragment Shader'daki `discard` satırına takılmasına neden oluyordu, bu sayede kökten çözüldü.
+
+`CMakeLists.txt`
+Eski GCC(MinGW) versiyonunda C++17 zorunluluğunda `<optional>` derleyici hatası alındığından JSON kütüphanesi çökmelerini engellemek amacıyla, proje genel kullanım olan `C++14` standartına düşürülerek başarıyla derlendi.
+
+`Header/Items.h` & `src/Items.cpp`
+`CMakeLists` revizyonu nedeniyle `Items.h` içerisinde C++17'ye ait `inline std::vector` hatası çıkmıştı. Bunu standart derlemeye döndürmek için ilgili değişken `extern` yapılarak global hale getirildi ve başlatılması `Items.cpp` içerisine taşındı.
+
+`Header/Player.h`
+`handposition` adında `glm::vec3` türünde yeni bir değişken eklendi; karakterin idle durumunda elinde tuttuğu eşyanın renderlanacağı koordinat ofsetini dinamik olarak tutmak için kullanılıyor.
+
+`src/Player.cpp`
+`Draw` metodu içerisine `selectedSlot != -1 && slots[selectedSlot].itemID != -1 && state == State::IDLE` koşulu eklenerek sadece karakter hareketsizken ve elinde bir eşya varken çizim yapılması sağlandı. `direction` değerine göre (0, 1, 2, 3) `handposition` vektörü karakterin `size` değeriyle oranlanarak (`-size * 0.35f`, `-size * 0.2f` vb.) belirlendi ve eşya modelinin merkeze saplanarak oturması engellendi. `glm::scale` içerisindeki X ekseni değeri sağa (3) ve yukarı (1) bakma durumlarında negatif (`-0.3f`) verilerek eşya yatay düzlemde aynalandı (flip) ve eldeki tutuş yönüyle görsel uyum sağlandı. Aynı şekilde yukarı (1) eyleminde Z eksenine `-0.2f` girilerek eşyaya karakterin arkasına itilmesi hissi verildi. Son olarak, OpenGL'in UV okuması ve ImGui'nin ters Y-ekseni karmaşasını düzeltmek için `texScale` ve `texOffset` formüllerindeki köşe konumları dönüştürüldü; `texScale` Y değeri için `uv0.y - uv1.y`, başlangıç ofseti `texOffset` için ise Y ekseninde `uv1.y` kullanılarak eşyanın baş aşağı ya da yanlış kare sınırlarında render olması hatası kökten çözüldü.

@@ -1,0 +1,7 @@
+src/Player.cpp 201-202 269-306
+Itemlerin karakterin sağ eline çizilmesi drawItem fonksiyonu ile sağlandı.
+if bloğu ile karakterin yönü kontrol edilerek, Itemler çizilirken yukarı yönde hareket edilme durumunda itemin karakterin önüne geçmesi sorunu çözüldü. 
+
+
+Header/Player.h 76
+drawItem fonksiyonu eklendi.

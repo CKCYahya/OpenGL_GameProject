@@ -1,13 +1,14 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "Animations.h"
+#include "Items.h"
 #include "glad/glad.h"
 #include "glfw/glfw3.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "imgui.h"
-#include "Items.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -20,17 +21,18 @@ class Shader;
 class VAO;
 class VBO;
 class EBO;
+class Animations;
 
 struct InventorySlot {
-  int itemID = -1;    
+  int itemID = -1;
   std::string itemName = "UNKNOWN";
-  GLuint atlasID = 0; 
-  int atlasIndex = -1; 
+  GLuint atlasID = 0;
+  int atlasIndex = -1;
   float uOffset = 0.0f;
   float vOffset = 0.0f;
   ImVec2 uv0;
   ImVec2 uv1;
-  int count = 0; 
+  int count = 0;
 };
 enum class State { IDLE, MOVING, INTERACTING };
 
@@ -48,6 +50,9 @@ public:
   InventorySlot slots[5];  // 5 adet envanter slotu
   int slotAmount;
   int selectedSlot;
+  float ray; // For interaction raycasting
+  Animations *walkAnim;
+  glm::vec3 handposition;
   glm::vec4 rayStart;
   glm::vec4 rayEnd;
   glm::vec3 rayDirection;
@@ -58,6 +63,10 @@ public:
   std::unique_ptr<Texture> texDown;
   std::unique_ptr<Texture> texLeft;
   std::unique_ptr<Texture> texRight;
+  std::unique_ptr<Texture> texWalkUp;
+  std::unique_ptr<Texture> texWalkDown;
+  std::unique_ptr<Texture> texWalkLeft;
+  std::unique_ptr<Texture> texWalkRight;
 
   std::unique_ptr<VAO> vao;
   std::unique_ptr<VBO> vbo;
@@ -72,6 +81,8 @@ public:
   ImTextureID Interact(Items &item);
   void dropItem(int selectedSlot,
                 std::map<int, std::unique_ptr<Items>> &itemList);
+  void fishing();
+  void drawItem(Shader &shader);
 };
 
 #endif
