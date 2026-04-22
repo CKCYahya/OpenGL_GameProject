@@ -18,6 +18,7 @@ saveSlotCount değişkeni eklendi ve en fazla 3 save slotu olana kadar kontrol e
 GetSaveNames fonksiyonu ile save alma işleminde slot sayısı if bloğu ile kontrol ediliyor.
 Load işlemi tamamlandıktan sonra oyuncunun beklemeden aksiyona dönmesi için state değişkeni START durumuna çekildi ve isGameStarted aktif edildi.
 Save alırken var olan save slotlarından birine tıklanırsa overwrite yapma özelliği eklendi. Kullanıcı "New Save" yerine önceden var olan bir save slotuna tıklarsa, gereksiz isim Input alanı atlanarak direkt o dosyanın üzerine hızlı kayıt alınması sağlandı.
+Save alırken save isminin boş olup olmadığını kontrol etmek için if bloğu eklendi.
 
 Header/Menu.h
 Save/Load ekranı durum yönetimi için selectedSaveSlot silindi; yerine saveSlotCount ile showSaveConfirm değişkenleri ve newSaveSection fonksiyon prototipi eklendi.

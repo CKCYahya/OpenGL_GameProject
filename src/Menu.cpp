@@ -339,10 +339,12 @@ void Menu::newSaveSection(Player *player, Camera *camera,
   ImGui::Spacing();
 
   if (ImGui::Button("Save")) {
-    SaveGame(player, camera, itemList, std::string(saveName) + ".json");
-    showSaveConfirm = false;
-    state = MenuState::PAUSE;
-    saveName[0] = '\0';
+    if (saveName[0] != '\0') {
+      SaveGame(player, camera, itemList, std::string(saveName) + ".json");
+      showSaveConfirm = false;
+      state = MenuState::SAVE;
+      saveName[0] = '\0';
+    }
   }
   ImGui::SameLine();
   if (ImGui::Button("Cancel")) {
