@@ -32,6 +32,8 @@ public:
   void Update(GLFWwindow *window, float dt, Player &player,
               std::map<int, std::unique_ptr<Items>> &itemList,
               GameMap &gameMap);
+  bool isMoving(Player &player);
+  bool hasReleasedKey = true;
 };
 
 #endif // FISHING_H
