@@ -192,10 +192,10 @@ void GameMap::Draw(Shader &shader, Camera &camera) {
             temp = instanceDataArray[i].texOffset;
             firstEncountered = true;
           }
+          instanceDataArray[i].texOffset = instanceDataArray[i + 1].texOffset;
           if (instanceDataArray[i + 1].isWater != 1.0f) {
             instanceDataArray[i].texOffset = temp;
           }
-          instanceDataArray[i].texOffset = instanceDataArray[i + 1].texOffset;
         }
       }
       instanceVBO->Bind();
