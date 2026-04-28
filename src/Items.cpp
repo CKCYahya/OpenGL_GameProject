@@ -69,9 +69,10 @@ void Items::Draw(Shader &shader, Player &player) {
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
-bool Items::isItemInRange(const Player &player) {
+bool Items::isItemInRange(Player &player) {
   glm::vec3 diff = player.Position - this->position;
   if (glm::length(diff) < player.interactionRadius) {
+    player.state = State::INTERACTING;
     return true;
   }
   return false;

@@ -176,7 +176,7 @@ void Player::Draw(Shader &shader) {
       texWalkLeft->Bind();
     else if (direction == 3 && texWalkRight)
       texWalkRight->Bind();
-  } else if (state == State::IDLE) {
+  } else {
     glUniform2f(glGetUniformLocation(shader.ID, "texScale"), 1.0f, 1.0f);
     glUniform2f(glGetUniformLocation(shader.ID, "texOffset"), 0.0f, 0.0f);
     if (direction == 0 && texDown)
@@ -237,6 +237,7 @@ ImTextureID Player::Interact(Items &item) {
     } else if (slotIndex == -1) {
       std::cout << "Inventory full! Item '" << item.name
                 << "' could not be added." << std::endl;
+      state = State::FULL_INVENTORY;
       return 0; // No slot available, return 0 to indicate failure
     }
     item.isActive = !item.isActive; // Toggle item active state on interaction

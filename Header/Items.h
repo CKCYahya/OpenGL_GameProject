@@ -44,7 +44,7 @@ public:
   void Load(Shader &shader, const char *texturePath);
   void Draw(Shader &shader, Player &player);
   void updateItemPosition(glm::vec3 position);
-  bool isItemInRange(const Player &player);
+  bool isItemInRange(Player &player);
   static std::map<int, std::unique_ptr<Items>>
   readJsonItems(const char *jsonItems);
   static void loadAtlas(Shader &shader);

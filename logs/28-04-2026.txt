@@ -1,0 +1,10 @@
+`Header/InteractionUI.h` & `src/InteractionUI.cpp`
+--`InteractionUI.h` dosyasındaki karmaşık include yapısı temizlendi ve gereksiz `#include` satırları kaldırılarak `class Window;`, `class Player;` gibi "Forward Declaration" (Ön Bildirim) yapısına geçildi. Bu sayede "Incomplete Type" ve "STL1003" hataları önlendi.
+--Arayüzün (ImGui) sadece etkileşim başladıktan 0.5 saniye sonra belirmesi için `InteractionUI` sınıfına `lastTime` üyesi eklendi ve zamanlama mantığı düzeltildi.
+--Karakterin kafasının üstünde yazının çıkması için, dünya koordinatları (World Space), kamera zoom'u ve Y ekseni tersliği hesaba katılarak ekran koordinatlarına (Screen Space) çevrildi.
+
+`Header/Items.h` & `src/Items.cpp`
+--`isItemInRange` fonksiyonunun imzasındaki `const Player &player` kısıtlaması `Player &player` olarak güncellendi. Bu sayede fonksiyon sadece mesafeyi ölçmekle kalmayıp, karakterin alanına girildiğinde `player.state = State::INTERACTING;` atamasını başarıyla yapabilir duruma getirildi ("Cannot assign to variable" hatası çözüldü).
+
+`src/Player.cpp`
+--`Player::Draw` fonksiyonundaki büyük bir çizim (render) hatası (glitch) giderildi. Eskiden karakter sadece `MOVING` veya `IDLE` durumundayken texture bağlıyordu (bind). 'E' tuşuna basılıp karakter `INTERACTING` durumuna geçtiğinde hiçbir texture bağlanmadığı için hafızadaki son texture (örneğin palamut veya harita) karakterin üzerine basılıyordu. Mantık `} else {` şekline çevrilerek `MOVING` dışındaki tüm durumlarda (`INTERACTING`, `FULL_INVENTORY`, `FISHING`) karakterin doğru "Idle" görsellerini kullanması sağlandı.

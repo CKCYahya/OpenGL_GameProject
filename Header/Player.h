@@ -30,7 +30,7 @@ struct InventorySlot {
   ImVec2 uv1;
   int count = 0; // Eşya adedi
 };
-enum class State { IDLE, MOVING, INTERACTING };
+enum class State { IDLE, MOVING, INTERACTING, FULL_INVENTORY, FISHING };
 
 class Player {
 
