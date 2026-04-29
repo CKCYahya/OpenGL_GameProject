@@ -1,5 +1,6 @@
 #include "Camera.h"
 #include "GameMap.h"
+#include "InteractionUI.h"
 #include "Items.h"
 #include "Panel.h"
 #include "Player.h"
@@ -99,6 +100,7 @@ int main() {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   Panel panel;
+  InteractionUI interactionUI;
   glfwSwapInterval(1);
   while (!window.ShouldClose()) {
     float currentFrame = (float)glfwGetTime();
@@ -123,6 +125,16 @@ int main() {
 
     // Update Player
     player.Update(window.getGLFWWindow(), deltaTime, gameMap);
+
+    bool nearItem = false;
+    for (const auto &itemPair : itemList) {
+      if (itemPair.second->isActive) {
+        if (itemPair.second->isItemInRange(player)) {
+          nearItem = true;
+        }
+      }
+    }
+    interactionUI.showInteractionUI(player, nearItem);
 
     // Toggle Camera Mode ("C" key)
     if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_C) == GLFW_PRESS) {
@@ -237,6 +249,11 @@ int main() {
       ImGui::Text("Press 'C' to toggle");
     }
     ImGui::End();
+
+    // --- Interaction Popup UI ---
+    if (interactionUI.state == PopupState::SHOW) {
+      interactionUI.Draw(&camera, &player, &window);
+    }
 
     panel.Update(window, player, itemList);
 

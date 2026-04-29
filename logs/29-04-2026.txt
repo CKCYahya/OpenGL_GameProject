@@ -1,0 +1,10 @@
+`src/main.cpp`
+--`InteractionUI interactionUI;` nesnesi `main()` fonksiyonu içine yerleştirildi.
+--Her frame'de item yakınlık kontrolü eklendi. Game loop'un her iterasyonunda tüm aktif itemler `isItemInRange(player)` ile kontrol edilerek sonuç `bool nearItem` değişkeninde tutuluyor. Bu değişken `interactionUI.showInteractionUI(player, nearItem)` çağrısına parametre olarak aktarılıyor. Böylece proximity bilgisi `player.state`'ten bağımsız takip ediliyor ve hareket animasyonlarını (`MOVING`/`IDLE`) bozmuyor.
+--`interactionUI.Draw()` çağrısı, ImGui render bölümüne eklendi.
+
+`Header/Items.h` & `src/Items.cpp`
+--`isItemInRange` fonksiyonu sadece mesafe kontrolü yaparak `bool` döndürecek şekilde sadeleştirildi. Fonksiyon artık `player.state` üzerinde herhangi bir değişiklik yapmıyor; proximity bilgisi dönüş değeri üzerinden iletiliyor.
+
+`Header/InteractionUI.h` & `src/InteractionUI.cpp`
+--`showInteractionUI` fonksiyonunun imzasına `bool nearItem` parametresi eklendi. Fonksiyon artık popup gösterimi için `player.state == State::INTERACTING` kontrolü yerine bu parametreyi kullanıyor. `FULL_INVENTORY` ve `FISHING` state'leri hâlâ `player.state` üzerinden kontrol ediliyor; ancak genel etkileşim popup'ı (\"E: Pick up\") `nearItem` parametresine bağlı.

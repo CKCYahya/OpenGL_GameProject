@@ -6,28 +6,27 @@
 #include "glm/glm.hpp"
 #include "imgui.h"
 
-InteractionUI::InteractionUI(Player &player, Camera &camera) {
+InteractionUI::InteractionUI() {
   state = PopupState::HIDE;
   lastTime = 0.0f;
 }
 
 InteractionUI::~InteractionUI() {}
 
-void InteractionUI::showInteractionUI(Player &player) {
-  if ((player.state == State::INTERACTING ||
-       player.state == State::FULL_INVENTORY ||
-       player.state == State::FISHING)) {
+void InteractionUI::showInteractionUI(Player &player, bool nearItem) {
+  if (nearItem || player.state == State::FULL_INVENTORY ||
+      player.state == State::FISHING) {
 
     if (state == PopupState::HIDE) {
       lastTime = glfwGetTime();
     }
 
-    if (player.state == State::INTERACTING) {
-      strcpy_s(message, "E: Pick up");
-    } else if (player.state == State::FULL_INVENTORY) {
+    if (player.state == State::FULL_INVENTORY) {
       strcpy_s(message, "Inventory is full");
     } else if (player.state == State::FISHING) {
       strcpy_s(message, "F: Start fishing");
+    } else if (nearItem) {
+      strcpy_s(message, "E: Pick up");
     }
     state = PopupState::SHOW;
   } else {

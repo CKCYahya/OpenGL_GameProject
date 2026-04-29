@@ -71,11 +71,7 @@ void Items::Draw(Shader &shader, Player &player) {
 
 bool Items::isItemInRange(Player &player) {
   glm::vec3 diff = player.Position - this->position;
-  if (glm::length(diff) < player.interactionRadius) {
-    player.state = State::INTERACTING;
-    return true;
-  }
-  return false;
+  return glm::length(diff) < player.interactionRadius;
 }
 
 std::map<int, std::unique_ptr<Items>>

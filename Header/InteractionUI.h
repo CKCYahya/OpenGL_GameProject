@@ -18,11 +18,11 @@ private:
   char message[256];
 
 public:
-  InteractionUI(Player &player, Camera &camera);
+  InteractionUI();
   ~InteractionUI();
   PopupState state;
 
-  void showInteractionUI(Player &player);
+  void showInteractionUI(Player &player, bool nearItem);
   void Draw(Camera *camera, Player *player, Window *window);
 };
 
