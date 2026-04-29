@@ -1,10 +1,12 @@
 `src/main.cpp`
 --`InteractionUI interactionUI;` nesnesi `main()` fonksiyonu içine yerleştirildi.
---Her frame'de item yakınlık kontrolü eklendi. Game loop'un her iterasyonunda tüm aktif itemler `isItemInRange(player)` ile kontrol edilerek sonuç `bool nearItem` değişkeninde tutuluyor. Bu değişken `interactionUI.showInteractionUI(player, nearItem)` çağrısına parametre olarak aktarılıyor. Böylece proximity bilgisi `player.state`'ten bağımsız takip ediliyor ve hareket animasyonlarını (`MOVING`/`IDLE`) bozmuyor.
+--Her frame'de item yakınlık kontrolü eklendi. Game loop'un her iterasyonunda tüm aktif itemler `isItemInRange(player)` ile kontrol edilerek sonuç `bool nearItem` değişkeninde tutuluyor. Bu değişken `interactionUI.showInteractionUI(fishingSys,player, nearItem)` çağrısına parametre olarak aktarılıyor. Böylece proximity bilgisi `player.state`'ten bağımsız takip ediliyor ve hareket animasyonlarını (`MOVING`/`IDLE`) bozmuyor.
 --`interactionUI.Draw()` çağrısı, ImGui render bölümüne eklendi.
 
 `Header/Items.h` & `src/Items.cpp`
 --`isItemInRange` fonksiyonu sadece mesafe kontrolü yaparak `bool` döndürecek şekilde sadeleştirildi. Fonksiyon artık `player.state` üzerinde herhangi bir değişiklik yapmıyor; proximity bilgisi dönüş değeri üzerinden iletiliyor.
 
 `Header/InteractionUI.h` & `src/InteractionUI.cpp`
---`showInteractionUI` fonksiyonunun imzasına `bool nearItem` parametresi eklendi. Fonksiyon artık popup gösterimi için `player.state == State::INTERACTING` kontrolü yerine bu parametreyi kullanıyor. `FULL_INVENTORY` ve `FISHING` state'leri hâlâ `player.state` üzerinden kontrol ediliyor; ancak genel etkileşim popup'ı (\"E: Pick up\") `nearItem` parametresine bağlı.
+--`showInteractionUI` fonksiyonunun imzasına `Fishing &fishing` ve `bool nearItem` parametreleri eklendi. Popup tetikleme koşulu `nearItem`, `player.state == State::FULL_INVENTORY`, `fishing.currentState == States::AVAILABLE` ve `fishing.currentState == States::CAUGHT` durumlarını kontrol ediyor.
+--Mesaj içeriği duruma göre belirleniyor: "Inventory is full", "F: Start fishing" (AVAILABLE), "F: Catch the fish" (CAUGHT) ve "E: Pick up" (nearItem).
+--`Draw` fonksiyonu stillendirildi: yarı saydam siyah arka plan (`0.6 alpha`), `8px` yuvarlatılmış köşeler, `14x8 px` padding, `1.3x` font scale, 1px text shadow efekti ve 0.5s bekleme sonrası 0.3 saniyelik fade-in animasyonu eklendi.

@@ -136,7 +136,7 @@ int main() {
         }
       }
     }
-    interactionUI.showInteractionUI(player, nearItem);
+    interactionUI.showInteractionUI(fishingSys, player, nearItem);
 
     // Toggle Camera Mode ("C" key)
     if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_C) == GLFW_PRESS) {
