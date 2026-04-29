@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include "Fishing.h"
 #include "GameMap.h"
 #include "InteractionUI.h"
 #include "Items.h"
@@ -100,6 +101,7 @@ int main() {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   Panel panel;
+  Fishing fishingSys;
   InteractionUI interactionUI;
   glfwSwapInterval(1);
   while (!window.ShouldClose()) {
@@ -198,6 +200,11 @@ int main() {
       player.dropItem(player.selectedSlot, itemList);
     }
 
+    if (player.slots[player.selectedSlot].itemID == 0) {
+      fishingSys.Update(window.getGLFWWindow(), deltaTime, player, itemList,
+                        gameMap);
+    }
+
     // Update Camera
     camera.Inputs(
         window.getGLFWWindow(), deltaTime, player.Position,
@@ -216,16 +223,15 @@ int main() {
     // Activate Texture Shader and Update Matrix for entities
     textureShader.Activate();
     camera.updateMatrix(-100.0f, 100.0f, textureShader, "camMatrix");
+    if (!itemList.empty()) {
+      itemList.begin()->second->drawAtlas(textureShader, itemList, winWidth,
+                                          winHeight, camera);
+    }
 
     // Draw Player
     player.Draw(textureShader);
 
     // Draw Items
-
-    if (!itemList.empty()) {
-      itemList.begin()->second->drawAtlas(textureShader, itemList, winWidth,
-                                          winHeight, camera);
-    }
 
     // --- IMGUI RENDER ---
     const float PAD = 10.0f;
@@ -255,7 +261,7 @@ int main() {
       interactionUI.Draw(&camera, &player, &window);
     }
 
-    panel.Update(window, player, itemList);
+    panel.Update(window, player);
 
     // --- MINIMAP ---
     gameMap.DrawMinimap(player.Position, camera, winWidth, winHeight);

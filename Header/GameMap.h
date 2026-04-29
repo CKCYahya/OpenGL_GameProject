@@ -27,6 +27,7 @@ struct MapTile {
 struct InstanceData {
   glm::mat4 model;
   glm::vec2 texOffset;
+  float isWater = 0.0f;
 };
 
 class GameMap {
@@ -36,12 +37,13 @@ public:
   float tileSize;
   float worldWidth;
   float worldHeight;
+  glm::vec2 temp;
 
   std::unique_ptr<Texture> atlasTexture;
 
   std::vector<MapTile> mapCache;    // Visual Layer
   std::vector<bool> collisionCache; // Collision Layer (true = blocked)
-  std::vector<bool> waterCache;     // Water Layer (true = water)
+  std::vector<int> waterCache;      // Water Layer (true = water)
   GLuint minimapTexID;
 
   std::unique_ptr<VAO> mapVAO;
@@ -63,7 +65,7 @@ public:
 
   // Helper to check collision
   bool checkCollision(float x, float y);
-  bool checkWater(float x, float y);
+  int checkWater(float x, float y);
 
 private:
   GLuint GenerateMinimapTexture();

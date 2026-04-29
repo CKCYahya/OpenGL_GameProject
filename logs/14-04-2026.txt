@@ -1,0 +1,8 @@
+`Header/Fishing.h`
+`FishLoot` struct'ı oluşturuldu; her bir balık loot girişi için `maxChance`, `itemID` ve `itemName` alanlarını tutuyor. Kümülatif olasılık tablosu mantığıyla çalışıyor: döngü sırayla kontrol edip ilk eşleşmede duruyor. `fishingLootTable` adında `static const unordered_map` tanımlandı; su tipi (2014, 2015, 2016) bazında her bölgenin balık loot tablosunu veri odaklı (data-driven) şekilde tutuyor. Lufer'in şansı %5'ten %35'e çıkarıldı.
+
+`src/Fishing.cpp`
+`Catch` metodundaki if-else zinciri tamamen kaldırıldı. Yerine `fishingLootTable.find(waterType)` ile tablo araması yapılıyor; bulunamazsa erken return ediliyor. Bulunan tablodaki `FishLoot` vektörü üzerinde döngüyle `chances < loot.maxChance` kontrolü yapılıp ilk eşleşmede `Items::AddItem` çağrılıp `break` ile çıkılıyor. Böylece yeni balık türü veya su bölgesi eklemek için sadece tabloya satır eklemek yeterli, fonksiyona dokunmaya gerek kalmıyor.
+
+`src/Panel.cpp`
+Envanter slotlarında eşya sayısını gösteren metin eklendi. `ImDrawList::AddText` kullanılarak her dolu slotun sağ alt köşesine beyaz renkte `count` değeri yazılıyor. `ImGui::SetWindowFontScale(1.5f)` ile yazı boyutu büyütüldü. Gösterim koşulu `count >= 1` olarak ayarlandı; tek eşyada bile sayı görünüyor.
