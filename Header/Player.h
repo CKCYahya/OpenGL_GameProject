@@ -3,6 +3,7 @@
 
 #include "Animations.h"
 #include "Items.h"
+#include "Line.h"
 #include "glad/glad.h"
 #include "glfw/glfw3.h"
 #include "glm/glm.hpp"
@@ -54,6 +55,8 @@ public:
   float ray; // For interaction raycasting
   Animations *walkAnim;
   Animations *fishAnim;
+  std::unique_ptr<Line> line;
+  std::unique_ptr<Shader> lineShader;
   glm::vec3 handposition;
   glm::vec4 rayStart;
   glm::vec4 rayEnd;
@@ -72,7 +75,7 @@ public:
 
   void LoadAssets(Shader &shader);
   void Update(GLFWwindow *window, float dt, GameMap &gameMap);
-  void Draw(Shader &shader);
+  void Draw(Shader &shader, Camera &camera);
   ImTextureID Interact(Items &item);
   void dropItem(int selectedSlot,
                 std::map<int, std::unique_ptr<Items>> &itemList);

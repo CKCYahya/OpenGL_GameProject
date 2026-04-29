@@ -2,6 +2,7 @@
 #include "Fishing.h"
 #include "GameMap.h"
 #include "Items.h"
+#include "Line.h"
 #include "Panel.h"
 #include "Player.h"
 #include "Shader.h"
@@ -216,7 +217,7 @@ int main() {
     }
 
     // Draw Player
-    player.Draw(textureShader);
+    player.Draw(textureShader, camera);
 
     // Draw Items
 

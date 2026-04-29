@@ -10,8 +10,8 @@ Camera::Camera(int width, int height, glm::vec3 position) {
 
 void Camera::updateMatrix(float nearPlane, float farPlane, Shader &shader,
                           const char *uniformName) {
-  glm::mat4 view = glm::mat4(1.0f);
-  glm::mat4 projection = glm::mat4(1.0f);
+  view = glm::mat4(1.0f);
+  projection = glm::mat4(1.0f);
   // 2D
   view = glm::translate(view, -Position);
   // projection = glm::perspective(glm::radians(FOVdeg), (float)width / height,
@@ -101,5 +101,4 @@ void Camera::Inputs(GLFWwindow *window, float dt, glm::vec3 targetPos,
     Position.y = minY;
   if (Position.y > maxY)
     Position.y = maxY;
-
 }

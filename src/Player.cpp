@@ -12,6 +12,7 @@ Player::Player(glm::vec3 startPos, float size, float speed)
     : Position(startPos), size(size), speed(speed), direction(0) {
   walkAnim = new Animations(8, 0.1f, 4, 2);
   fishAnim = new Animations(8, 0.15f, 4, 2);
+  line = std::make_unique<Line>();
   selectedSlot = -1;
   slotAmount = sizeof(this->slots) / sizeof(this->slots[0]);
   interactionRadius =
@@ -57,6 +58,8 @@ Player::~Player() {
 }
 
 void Player::LoadAssets(Shader &shader) {
+  // Load line shader for fishing line
+  lineShader = std::make_unique<Shader>("shaders/line.vert", "shaders/line.frag");
   for (auto &texturePath : texturePaths) {
     std::vector<std::unique_ptr<Texture>> textures;
     for (auto &path : texturePath.second) {
@@ -152,7 +155,7 @@ void Player::Update(GLFWwindow *window, float dt, GameMap &gameMap) {
   rayDirection = glm::normalize(newRayEnd - newRayStart);
 }
 
-void Player::Draw(Shader &shader) {
+void Player::Draw(Shader &shader, Camera &camera) {
   if (direction == 1) {
     drawItem(shader);
   }
@@ -186,6 +189,15 @@ void Player::Draw(Shader &shader) {
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   if (direction != 1) {
     drawItem(shader);
+  }
+
+  // Draw fishing line after player (uses its own shader)
+  if (state == State::FISHING) {
+    line->Update(direction, fishAnim->currentFrame, Position, newRayEnd);
+    line->Draw(*lineShader, camera);
+    // Re-activate texture shader for subsequent draws
+    shader.Activate();
+    camera.updateMatrix(-100.0f, 100.0f, shader, "camMatrix");
   }
 }
 

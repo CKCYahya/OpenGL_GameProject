@@ -10,3 +10,33 @@
 --- Böylelikle su git gel yaparak hareketliymiş gibi gözükmesi sağlandı.
 
 NOT: Su bölgelerinin tile texture'ları random olduğu için ardışık aynı olan tile texture'larının swaplanması bir değişim olmadığından bazı yerlerde suyun hareketi algılanmyor.
+`Header/Camera.h` & `src/Camera.cpp`
+--`Camera` sınıfına `glm::mat4 view` ve `glm::mat4 projection` üye değişkenleri eklendi. `updateMatrix` fonksiyonundaki lokal `view` ve `projection` değişkenleri bu üye değişkenlere dönüştürüldü. Böylece view ve projection matrisleri dışarıdan erişilebilir hale getirildi (Line çizimi için gerekli).
+
+`Header/Line.h` (YENİ DOSYA)
+--`Line` sınıfı tanımlandı: `Line()` constructor, `Update(direction, currentFrame, playerPos, endWorld)` ve `Draw(shader, camera)` metotları.
+--Constructor VAO/VBO'yu placeholder veri ile bir kez oluşturur, her frame yeni nesne yaratılmasına gerek kalmaz.
+--4 yön (Down, Up, Left, Right) ve 8 frame için `rodTipOffsets` dizileri tanımlandı. Her frame'in olta ucunun player merkezine göre world-space offset'i tutuluyor.
+
+`src/Line.cpp` (YENİ DOSYA)
+--`Update` metodu: direction ve currentFrame'e göre `rodTipOffsets` dizisinden doğru offset alınır, `playerPos + offset` ile başlangıç noktası hesaplanır ve `glBufferSubData` ile VBO güncellenir.
+--`Draw` metodu: `camMatrix` (projection * view) ve `model` (identity) uniform'ları set edilerek `GL_LINES` ile çizgi çizilir. `lineColor` uniform'u ile çizgi rengi belirlenir.
+
+`shaders/line.vert` (YENİ DOSYA)
+--Sadece pozisyon dönüşümü yapan minimal vertex shader. `camMatrix * model * vec4(aPos, 1.0)` ile çalışır.
+
+`shaders/line.frag` (YENİ DOSYA)
+--`lineColor` uniform ile düz renk çıktı üreten fragment shader.
+
+`Header/Player.h`
+--`#include "Line.h"` eklendi.
+--`std::unique_ptr<Line> line` ve `std::unique_ptr<Shader> lineShader` üye değişkenleri eklendi.
+--`Draw` metodu `Draw(Shader &shader, Camera &camera)` olarak güncellendi.
+
+`src/Player.cpp`
+--Constructor'da `line = std::make_unique<Line>()` ile Line nesnesi oluşturuluyor.
+--`LoadAssets` fonksiyonunda `lineShader` oluşturuluyor (`shaders/line.vert`, `shaders/line.frag`).
+--`Draw` fonksiyonunda: player çizildikten sonra, `State::FISHING` kontrolü ile `line->Update()` ve `line->Draw(*lineShader, camera)` çağrılıyor. Ardından `textureShader` geri aktifleştiriliyor (`shader.Activate()` + `camera.updateMatrix()`).
+
+`src/main.cpp`
+--`player.Draw(textureShader)` çağrısı `player.Draw(textureShader, camera)` olarak güncellendi.

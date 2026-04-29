@@ -12,4 +12,4 @@ include/nlohmann/
 build/
 .vscode/
 saves/
-.clangd
+.cache/
