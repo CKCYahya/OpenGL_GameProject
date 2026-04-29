@@ -27,6 +27,7 @@ struct MapTile {
 struct InstanceData {
   glm::mat4 model;
   glm::vec2 texOffset;
+  float isWater = 0.0f;
 };
 
 class GameMap {
@@ -36,6 +37,7 @@ public:
   float tileSize;
   float worldWidth;
   float worldHeight;
+  glm::vec2 tempTexOffset;
 
   std::unique_ptr<Texture> atlasTexture;
 

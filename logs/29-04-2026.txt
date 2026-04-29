@@ -1,0 +1,12 @@
+`Header/GameMap.h`
+---`InstanceData` struct'ına `float isWater = 0.0f;` satırı eklendi. Bu, varsayılan olarak tüm tile'ların "karada" (su olmayan) olarak ayarlanmasını sağlar.
+
+`src/GameMap.cpp`
+---`SetupMesh` fonksiyonundaki iç içe `for` döngüsünde,  `if (waterCache[tileIndex]) { inst.isWater = 1.0f; }` eklenerek su kontrolü yapılıyor.
+--- map.vert shader dosyasına `isWater` attribute'u eklendi. layout (location = 7) in float aIsWater; olarak ayarlandı
+--- 7 numaralı layout location'ı kullanıldığı için setupmesh fonksiyonundaki vertex attrib pointer ile gpu'ya veri gönderimi sağlandı.
+--- Draw fonksiyonunda zaman bazlı texture offset değişimi eklendi. lastUpdateTime ve currentTime değişkenleri ile zaman bazlı texture offset değişimi sağlandı.  
+--- for döngüsünde her iki ardışık su tile'larının doku koordinatlarını sağ ve sol olmak üzere değiştirmek için kullanıldı.
+--- Böylelikle su git gel yaparak hareketliymiş gibi gözükmesi sağlandı.
+
+NOT: Su bölgelerinin tile texture'ları random olduğu için ardışık aynı olan tile texture'larının swaplanması bir değişim olmadığından bazı yerlerde suyun hareketi algılanmyor.
