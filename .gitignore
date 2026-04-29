@@ -11,3 +11,5 @@ include/nlohmann/
 # Derleme Klasörleri
 build/
 .vscode/
+saves/
+.clangd

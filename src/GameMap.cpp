@@ -25,9 +25,11 @@ GameMap::GameMap(const char *mapFile) {
   for (size_t i = 0; i < colData.size(); ++i) {
     // If GID > 0, it's a collision tile
     collisionCache[i] = (colData[i] == 2000);
-    waterCache[i] =
-        (colData[i] != 0 &&
-         colData[i] != 2000); // Assuming water tiles have GID > 0 and not 2000
+    if (colData[i] == 2014 || colData[i] == 2015 || colData[i] == 2016) {
+      waterCache[i] = colData[i];
+    } else {
+      waterCache[i] = 0;
+    }
   }
 
   atlasTexture =
@@ -181,14 +183,19 @@ void GameMap::Draw(Shader &shader, Camera &camera) {
   if (!instanceDataArray.empty()) {
     static float lastUpdateTime = 0.0f;
     float currentTime = glfwGetTime();
-    if (currentTime - lastUpdateTime > 0.5f) {
+    if (currentTime - lastUpdateTime >= 0.5f) {
       lastUpdateTime = currentTime;
-      for (int i = 0; i < (int)instanceDataArray.size() - 1; i += 2) {
-        if (instanceDataArray[i].isWater == 1.0f &&
-            instanceDataArray[i + 1].isWater == 1.0f) {
-          tempTexOffset = instanceDataArray[i].texOffset;
+      bool firstEncountered = false;
+      for (int i = 0; i < (int)instanceDataArray.size() - 1; i++) {
+        if (instanceDataArray[i].isWater == 1.0f) {
+          if (firstEncountered == false) {
+            temp = instanceDataArray[i].texOffset;
+            firstEncountered = true;
+          }
           instanceDataArray[i].texOffset = instanceDataArray[i + 1].texOffset;
-          instanceDataArray[i + 1].texOffset = tempTexOffset;
+          if (instanceDataArray[i + 1].isWater != 1.0f) {
+            instanceDataArray[i].texOffset = temp;
+          }
         }
       }
       instanceVBO->Bind();
@@ -197,7 +204,6 @@ void GameMap::Draw(Shader &shader, Camera &camera) {
                       instanceDataArray.data());
       instanceVBO->Unbind();
     }
-
     mapVAO->Bind();
     glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0,
                             (GLsizei)instanceDataArray.size());
@@ -315,17 +321,17 @@ bool GameMap::checkCollision(float x, float y) {
   return false;
 }
 
-bool GameMap::checkWater(float x, float y) {
+int GameMap::checkWater(float x, float y) {
   float localX = x + worldWidth / 2.0f;
   float localY = y + worldHeight / 2.0f;
 
   if (localX < 0 || localX >= worldWidth || localY < 0 ||
       localY >= worldHeight) {
-    return false; // Out of bounds is not water
+    return 0; // Out of bounds is not water
   }
 
-  int tileX = (int)(localX / tileSize) + 1; // +1 to align with collision check
-  int tileY = (int)(localY / tileSize) + 1; // +1 to align with collision check
+  int tileX = (int)(localX / tileSize);
+  int tileY = (int)(localY / tileSize);
 
   int tiledRow = MAP_HEIGHT_TILES - 1 - tileY;
   int index = tiledRow * MAP_WIDTH_TILES + tileX;
@@ -333,5 +339,5 @@ bool GameMap::checkWater(float x, float y) {
   if (index >= 0 && index < waterCache.size()) {
     return waterCache[index];
   }
-  return false;
+  return 0;
 }

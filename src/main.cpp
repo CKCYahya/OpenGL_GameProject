@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include "Fishing.h"
 #include "GameMap.h"
 #include "Items.h"
 #include "Panel.h"
@@ -99,6 +100,7 @@ int main() {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   Panel panel;
+  Fishing fishingSys;
   glfwSwapInterval(1);
   while (!window.ShouldClose()) {
     float currentFrame = (float)glfwGetTime();
@@ -123,7 +125,6 @@ int main() {
 
     // Update Player
     player.Update(window.getGLFWWindow(), deltaTime, gameMap);
-
     // Toggle Camera Mode ("C" key)
     if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_C) == GLFW_PRESS) {
       state = 2;
@@ -186,6 +187,11 @@ int main() {
       player.dropItem(player.selectedSlot, itemList);
     }
 
+    if (player.slots[player.selectedSlot].itemID == 0) {
+      fishingSys.Update(window.getGLFWWindow(), deltaTime, player, itemList,
+                        gameMap);
+    }
+
     // Update Camera
     camera.Inputs(
         window.getGLFWWindow(), deltaTime, player.Position,
@@ -204,16 +210,15 @@ int main() {
     // Activate Texture Shader and Update Matrix for entities
     textureShader.Activate();
     camera.updateMatrix(-100.0f, 100.0f, textureShader, "camMatrix");
+    if (!itemList.empty()) {
+      itemList.begin()->second->drawAtlas(textureShader, itemList, winWidth,
+                                          winHeight, camera);
+    }
 
     // Draw Player
     player.Draw(textureShader);
 
     // Draw Items
-
-    if (!itemList.empty()) {
-      itemList.begin()->second->drawAtlas(textureShader, itemList, winWidth,
-                                          winHeight, camera);
-    }
 
     // --- IMGUI RENDER ---
     const float PAD = 10.0f;
@@ -238,7 +243,7 @@ int main() {
     }
     ImGui::End();
 
-    panel.Update(window, player, itemList);
+    panel.Update(window, player);
 
     // --- MINIMAP ---
     gameMap.DrawMinimap(player.Position, camera, winWidth, winHeight);

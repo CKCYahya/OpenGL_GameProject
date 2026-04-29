@@ -11,6 +11,7 @@
 Player::Player(glm::vec3 startPos, float size, float speed)
     : Position(startPos), size(size), speed(speed), direction(0) {
   walkAnim = new Animations(8, 0.1f, 4, 2);
+  fishAnim = new Animations(8, 0.15f, 4, 2);
   selectedSlot = -1;
   slotAmount = sizeof(this->slots) / sizeof(this->slots[0]);
   interactionRadius =
@@ -22,6 +23,8 @@ Player::Player(glm::vec3 startPos, float size, float speed)
       -size, -size, 0.0f, 0.0f, 0.0f, // Bottom Left
       -size, size,  0.0f, 0.0f, 1.0f  // Top Left
   };
+  rayStart = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+  rayEnd = glm::vec4(0.0f, -size * 2, 0.0f, 1.0f);
 
   GLuint indices[] = {0, 1, 2, 0, 2, 3};
 
@@ -43,47 +46,26 @@ Player::Player(glm::vec3 startPos, float size, float speed)
 }
 
 Player::~Player() {
-  if (texUp)
-    texUp->Delete();
-  if (texDown)
-    texDown->Delete();
-  if (texLeft)
-    texLeft->Delete();
-  if (texRight)
-    texRight->Delete();
-  if (texWalkUp)
-    texWalkUp->Delete();
-  if (texWalkDown)
-    texWalkDown->Delete();
-  if (texWalkLeft)
-    texWalkLeft->Delete();
-  if (texWalkRight)
-    texWalkRight->Delete();
+  for (auto &pair : textures) {
+    for (auto &tex : pair.second) {
+      if (tex)
+        tex->Delete();
+    }
+  }
+  delete walkAnim;
+  delete fishAnim;
 }
 
 void Player::LoadAssets(Shader &shader) {
-  // Load Textures
-  texDown = std::make_unique<Texture>("image/down.png", GL_TEXTURE_2D,
-                                      GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
-  texDown->texUnit(shader, "tex0", 0);
-
-  texUp = std::make_unique<Texture>("image/up.png", GL_TEXTURE_2D, GL_TEXTURE0,
-                                    GL_RGBA, GL_UNSIGNED_BYTE);
-  texLeft = std::make_unique<Texture>("image/left.png", GL_TEXTURE_2D,
-                                      GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
-  texRight = std::make_unique<Texture>("image/right.png", GL_TEXTURE_2D,
-                                       GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
-  texWalkDown =
-      std::make_unique<Texture>("image/walk-down.png", GL_TEXTURE_2D,
-                                GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
-  texWalkUp = std::make_unique<Texture>("image/walk-up.png", GL_TEXTURE_2D,
-                                        GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
-  texWalkLeft =
-      std::make_unique<Texture>("image/walk-left.png", GL_TEXTURE_2D,
-                                GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
-  texWalkRight =
-      std::make_unique<Texture>("image/walk-right.png", GL_TEXTURE_2D,
-                                GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+  for (auto &texturePath : texturePaths) {
+    std::vector<std::unique_ptr<Texture>> textures;
+    for (auto &path : texturePath.second) {
+      textures.push_back(std::make_unique<Texture>(
+          path.c_str(), GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE));
+      textures.back()->texUnit(shader, "tex0", 0);
+    }
+    this->textures[texturePath.first] = std::move(textures);
+  }
 }
 
 void Player::Update(GLFWwindow *window, float dt, GameMap &gameMap) {
@@ -156,6 +138,18 @@ void Player::Update(GLFWwindow *window, float dt, GameMap &gameMap) {
     Position.y = minY;
   if (Position.y > maxY)
     Position.y = maxY;
+
+  // Direction angles: 0=Down(270°), 1=Up(90°), 2=Left(180°), 3=Right(0°)
+  static const float angles[] = {glm::radians(270.0f), glm::radians(90.0f),
+                                 glm::radians(180.0f), glm::radians(0.0f)};
+  float angle = angles[direction];
+  float rayDistance = size * 2.0f;
+  rayEnd =
+      glm::vec4(cos(angle) * rayDistance, sin(angle) * rayDistance, 0.0f, 1.0f);
+
+  newRayStart = glm::vec3(playerModel * rayStart);
+  newRayEnd = glm::vec3(playerModel * rayEnd);
+  rayDirection = glm::normalize(newRayEnd - newRayStart);
 }
 
 void Player::Draw(Shader &shader) {
@@ -168,25 +162,18 @@ void Player::Draw(Shader &shader) {
     glUniform2f(glGetUniformLocation(shader.ID, "texScale"), uv1.x - uv0.x,
                 uv1.y - uv0.y);
     glUniform2f(glGetUniformLocation(shader.ID, "texOffset"), uv0.x, uv0.y);
-    if (direction == 0 && texWalkDown)
-      texWalkDown->Bind();
-    else if (direction == 1 && texWalkUp)
-      texWalkUp->Bind();
-    else if (direction == 2 && texWalkLeft)
-      texWalkLeft->Bind();
-    else if (direction == 3 && texWalkRight)
-      texWalkRight->Bind();
+    getAnimation("walk", direction);
   } else if (state == State::IDLE) {
     glUniform2f(glGetUniformLocation(shader.ID, "texScale"), 1.0f, 1.0f);
     glUniform2f(glGetUniformLocation(shader.ID, "texOffset"), 0.0f, 0.0f);
-    if (direction == 0 && texDown)
-      texDown->Bind();
-    else if (direction == 1 && texUp)
-      texUp->Bind();
-    else if (direction == 2 && texLeft)
-      texLeft->Bind();
-    else if (direction == 3 && texRight)
-      texRight->Bind();
+    getAnimation("idle", direction);
+  } else if (state == State::FISHING) {
+    glm::vec2 uv0, uv1;
+    fishAnim->GetUVCoordinates(uv0, uv1);
+    glUniform2f(glGetUniformLocation(shader.ID, "texScale"), uv1.x - uv0.x,
+                uv1.y - uv0.y);
+    glUniform2f(glGetUniformLocation(shader.ID, "texOffset"), uv0.x, uv0.y);
+    getAnimation("fishing", direction);
   }
 
   // Create Model Matrix
@@ -195,7 +182,6 @@ void Player::Draw(Shader &shader) {
 
   glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE,
                      glm::value_ptr(playerModel));
-
   vao->Bind();
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   if (direction != 1) {
@@ -226,6 +212,7 @@ ImTextureID Player::Interact(Items &item) {
       this->slots[slotIndex].count += 1;
     } else if (slotIndex != -1) {
       this->slots[slotIndex].itemID = item.ID;
+      this->slots[slotIndex].itemName = item.name;
       this->slots[slotIndex].atlasID = item.loadedAtlases[item.atlasIndex]->ID;
       this->slots[slotIndex].count += 1;
       float atlasW = item.atlasWH[item.atlasIndex].x;
@@ -251,19 +238,36 @@ void Player::dropItem(int selectedSlot,
                       std::map<int, std::unique_ptr<Items>> &itemList) {
   if (selectedSlot >= 0 && selectedSlot < slotAmount &&
       slots[selectedSlot].itemID != -1) {
+    int droppedItemID = slots[selectedSlot].itemID;
     Items *item = Items::searchItems(itemList, selectedSlot);
+
+    // If not found in the map create a new one
+    if (item == nullptr) {
+      static int dropCounter = 100000;
+      int entityID = dropCounter++;
+      std::string dropName = slots[selectedSlot].itemName;
+      itemList[entityID] =
+          std::make_unique<Items>(dropName, this->Position, droppedItemID);
+      item = itemList[entityID].get();
+      item->atlasIndex = Items::GetAtlasIndex(droppedItemID);
+    }
+
+    if (slots[selectedSlot].count > 1) {
+      slots[selectedSlot].count -= 1;
+      item->position = this->Position;
+      item->isActive = true;
+      item->slotIndex = -1;
+      return;
+    }
+
     item->slotIndex = -1;
     item->position = this->Position;
-    item->isActive = !item->isActive;
+    item->isActive = true;
+
     slots[selectedSlot].itemID = -1;
     slots[selectedSlot].atlasID = 0;
     slots[selectedSlot].count = 0;
   }
-}
-
-void Player::fishing() {
-
-  std::cout << "Fishing action triggered!" << std::endl;
 }
 
 void Player::drawItem(Shader &shader) {
@@ -302,4 +306,10 @@ void Player::drawItem(Shader &shader) {
     vao->Bind();
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   }
+}
+
+void Player::getAnimation(std::string animType, int direction) {
+
+  if (textures[animType][direction])
+    textures[animType][direction]->Bind();
 }

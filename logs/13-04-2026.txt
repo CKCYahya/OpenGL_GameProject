@@ -1,0 +1,48 @@
+Öğleden önce;
+`Header/Items.h`
+Item sisteminin temel yardımcı fonksiyonları header'a taşındı. Atlas üzerindeki UV koordinatlarını hesaplayan `CalculateUV` ve bir itemID'nin hangi atlas'a ait olduğunu bulan `GetAtlasIndex` static metod deklarasyonları eklendi. Balık tutma sonrası envantere ekleme işlemini merkezileştiren `AddItem` metodu tanımlandı; parametre olarak player, itemList, itemID ve itemName alıyor.
+
+`Header/Player.h`
+`InventorySlot` struct'ına eksik olan `atlasIndex`, `uOffset` ve `vOffset` alanları eklendi. `AddItem` fonksiyonu bu alanlara yazıyordu ancak struct'ta tanımlı değillerdi, bu da çökmelere ve yanlış render'a sebep oluyordu.
+
+`src/Items.cpp`
+`CalculateUV` fonksiyonu sıfırdan yazıldı. Verilen itemID ve atlasIndex'e göre atlas üzerindeki sütun/satır pozisyonunu hesaplayıp UV offset'ini döndürüyor. Daha önce bu hesaplama `drawAtlas` içinde inline olarak tekrarlanıyordu; şimdi tek bir fonksiyonda merkezileştirildi.
+`drawAtlas` içindeki tekrarlanan UV hesaplama kodu kaldırılıp yerine `CalculateUV` çağrısı konuldu.
+
+`GetAtlasIndex` fonksiyonu sıfırdan yazıldı. Mantık kümülatif offset kullanıyor: her atlasın karo sayısını sırayla toplayarak itemID'nin hangi aralığa düştüğünü buluyor.
+
+`AddItem` fonksiyonu sıfırdan yazıldı. Önce envanterde aynı itemID varsa sayısını artırıyor (stackleme). Yoksa boş slot arıyor ve slot'a itemID, atlasIndex, atlasID (OpenGL texture ID), UV koordinatları ve uv0/uv1 değerlerini atıyor. Ayrıca itemList'e yeni bir Items nesnesi oluşturup ekliyor ki dropItem sırasında searchItems ile bulunabilsin. Döngü index-based (`for(int i)`) yapıldı, böylece hangi slot'a yazıldığı bilinip Items nesnesinin `slotIndex`'ine doğru değer atanabiliyor. `auto&` referans kullanılarak kopya yerine doğrudan slot'a yazılması sağlandı.
+
+`src/Fishing.cpp`
+`Catch` metodundaki envantere ekleme mantığı tamamen kaldırılıp yerine merkezi `Items::AddItem` çağrısı konuldu. Böylece envanter ekleme tek bir noktadan yönetiliyor, kod tekrarı önlendi.
+Her balık ID'sinin yanına karşılık gelen isim (`itemName`) string'i eklendi. Konsol çıktılarında artık sayısal ID yerine balık adı gösteriliyor.
+
+`src/Player.cpp`
+`dropItem` fonksiyonuna stacklenmiş eşyalar için ayrı bir dal eklendi. Eğer slottaki eşya sayısı 1'den fazlaysa, eşya tamamen düşürülmek yerine sadece sayısı 1 azaltılıyor. Sayı 1 ise eski davranış korunuyor: eşya yere bırakılıp slot sıfırlanıyor.
+
+Öğleden sonra;
+`Header/Items.h`
+Items constructor'ına `itemID` parametresi eklendi; artık nesne oluşturulurken ID doğrudan atanıyor, ayrı bir satırda `newItem->ID = localID` yapmaya gerek kalmıyor. `AddItem` fonksiyonundan `itemList` parametresi kaldırıldı; fonksiyon artık sadece envanter slotlarını dolduruyor, itemList'e nesne ekleme sorumluluğu `dropItem`'a taşındı.
+
+`Header/Player.h`
+`InventorySlot` struct'ına `itemName` string alanı eklendi. Böylece slot içinde tutulan eşyanın adı biliniyor ve dropItem sırasında yeni Items nesnesi oluştururken isim bilgisi mevcut oluyor.
+
+`Header/Panel.h`
+`Panel::Update` metodundan `itemList` parametresi kaldırıldı. Panel sadece oyuncunun slot bilgilerini çiziyor, itemList'e erişmesine gerek yoktu.
+
+`src/Items.cpp`
+Items constructor'ı güncellendi: `itemID` parametresi eklendi ve initializer list'te `ID(itemID)` ile doğrudan atanıyor. `readJsonItems` içindeki Items oluşturma çağrısı yeni constructor imzasına uyarlandı, artık `localID` doğrudan constructor'a geçiriliyor.
+`AddItem` fonksiyonundan `itemList` parametresi ve itemList'e nesne ekleme bloğu tamamen kaldırıldı. Fonksiyonun başına geçersiz itemID kontrolü (`itemID < 0`) eklendi. Slot'a atama sırasında `itemName` de kaydediliyor.
+
+`src/Fishing.cpp`
+`AddItem` çağrısından `itemList` parametresi kaldırılarak yeni imzaya uyarlandı. Çağrının etrafına `if (itemID != -1)` kontrolü eklendi; böylece hiçbir su türüyle eşleşmeyen durumda geçersiz ID ile AddItem çağrılması engellendi.
+
+`src/Player.cpp`
+`Interact` fonksiyonunda slot'a eşya eklerken `itemName` alanı da dolduruluyor.
+`dropItem` fonksiyonu baştan düzenlendi. `searchItems` null döndüğünde (balık tutmayla eklenen eşyalar gibi itemList'te karşılığı olmayan durumlar) artık çökmek yerine yerinde yeni bir Items nesnesi oluşturuluyor. Yeni nesneye benzersiz bir entityID atanıyor (`static int dropCounter` ile 100000'den başlayarak) ve itemList'e ekleniyor. `isActive` toggle yerine doğrudan `true` olarak atanıyor, böylece yere bırakılan eşya her zaman görünür oluyor.
+
+`src/Panel.cpp`
+`Panel::Update` metodundan `itemList` parametresi kaldırılarak header'daki değişikliğe uyarlandı.
+
+`src/main.cpp`
+`panel.Update` çağrısından `itemList` argümanı kaldırılarak yeni imzaya uyarlandı.

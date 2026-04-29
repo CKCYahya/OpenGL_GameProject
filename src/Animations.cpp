@@ -7,16 +7,29 @@ Animations::Animations(int maxFrames, float animSpeed, int cols, int rows) {
   this->rows = rows;
   this->currentFrame = 0;
   this->animTimer = 0.0f;
+  // Default range: all frames, looping
+  this->startFrame = 0;
+  this->endFrame = maxFrames - 1;
+  this->looping = true;
+  this->finished = false;
 }
 
 Animations::~Animations() {}
 
 void Animations::Update(float deltaTime) {
+  if (finished)
+    return;
+
   animTimer += deltaTime;
   if (animTimer >= animSpeed) {
     currentFrame++;
-    if (currentFrame >= maxFrames) {
-      currentFrame = 0;
+    if (currentFrame > endFrame) {
+      if (looping) {
+        currentFrame = startFrame;
+      } else {
+        currentFrame = endFrame;
+        finished = true;
+      }
     }
     animTimer = 0.0f;
   }
@@ -37,4 +50,13 @@ void Animations::GetUVCoordinates(glm::vec2 &uv0, glm::vec2 &uv1) {
 
   uv0 = glm::vec2(u0, v0);
   uv1 = glm::vec2(u1, v1);
+}
+
+void Animations::SetRange(int start, int end, bool loop) {
+  startFrame = start;
+  endFrame = end;
+  looping = loop;
+  currentFrame = start;
+  animTimer = 0.0f;
+  finished = false;
 }

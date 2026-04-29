@@ -1,0 +1,41 @@
+image/fishing-up.png
+image/fishing-down.png
+image/fishing-left.png
+image/fishing-right.png
+
+`src/Player.cpp`
+--Oyun içerisindeki animasyonlar için oluşturulan görsellerin artmasından dolayı tek tek texture atamaları yerine map kullanıldı. `std::map<std::string, std::vector<std::unique_ptr<Texture>>> textures` yapısıyla tüm texture'lar (idle, walk, fishing) tek bir koleksiyonda tutulmaya başlandı.
+--Bu map içerisindeki texture'lar `LoadAssets` fonksiyonunda artık `texturePaths` global map'i üzerinden for döngüsü ile yüklenmektedir. Her animasyon grubu (`idle`, `walk`, `fishing`) için path vektörü iterate edilerek `make_unique<Texture>` ile oluşturuluyor ve `this->textures[key]` map'ine `std::move` ile taşınıyor.
+--Aynı şekilde map içerisindeki texture'ların silinmesi için map üzerinden döngü kurularak destructor güncellendi. `walkAnim` ve `fishAnim` pointer'ları da destructor'da `delete` ile temizleniyor.
+--Her texture if/else bloklarıyla bind edilmek yerine `getAnimation(animType, direction)` fonksiyonu ile `textures[animType][direction]->Bind()` çağrısıyla bind edilmesi sağlandı.
+--`Draw` metodu içerisinde `State::FISHING` durumu eklendi. Bu durumda `fishAnim->GetUVCoordinates()` çağrılarak spritesheet'in doğru frame'inin UV koordinatları alınıyor ve shader'a `texScale`/`texOffset` uniform'ları olarak geçiriliyor.
+--`fishAnim` pointer'ı constructor'da `new Animations(8, 0.15f, 4, 2)` ile oluşturuluyor. Yürüme animasyonundan daha yavaş (`0.15s/frame` vs `0.1s/frame`) ayarlandı.
+
+`Header/Player.h`
+--12 adet bireysel `unique_ptr<Texture>` (`texUp`, `texDown`, `texWalkUp`, `texFishingDown` vb.) kaldırılarak tek bir `std::map<std::string, std::vector<std::unique_ptr<Texture>>> textures` member'ı ile değiştirildi.
+--`Animations *fishAnim` pointer'ı eklendi; balık tutma animasyonunun frame bazlı kontrolü için kullanılıyor.
+--Karakter state enum'undaki `INTERACTING` durumu `FISHING` olarak değiştirildi: `enum class State { IDLE, MOVING, FISHING }`.
+--`getAnimation(std::string animType, int direction)` fonksiyon deklarasyonu eklendi.
+--`fishing()` fonksiyonu kaldırıldı, balık tutma mantığı tamamen `Fishing` sınıfı tarafından yönetiliyor.
+--Dosya sonuna `texturePaths` global map'i ve yön sırasına göre düzenlenmiş path vektörleri eklendi (0=Down, 1=Up, 2=Left, 3=Right sıralaması).
+
+`Header/Animations.h` & `src/Animations.cpp`
+--`Animations` sınıfına frame aralığı (range) desteği eklendi. `startFrame`, `endFrame`, `looping` ve `finished` field'ları tanımlandı. Varsayılan değerler `startFrame=0`, `endFrame=maxFrames-1`, `looping=true` olarak ayarlandı; bu sayede mevcut yürüme animasyonu hiç etkilenmeden geriye uyumlu kaldı.
+--`SetRange(int start, int end, bool loop)` metodu eklendi. Bu metod çağrıldığında `currentFrame` başlangıç frame'ine sıfırlanıyor, `animTimer` resetleniyor ve `finished` flag'i `false` yapılıyor. Balık tutma animasyonunun faz geçişlerinde (cast → wait → reel) kullanılıyor.
+--`Update(float deltaTime)` metodu güncellendi: `finished` flag'i `true` ise erken çıkıyor, `currentFrame` `endFrame`'i aştığında `looping` true ise `startFrame`'e dönüyor, false ise `endFrame`'de kalıp `finished = true` yapıyor.
+
+`Header/Fishing.h`
+--`States` enum'u güncellendi `enum class States { NOT_AVAILABLE, AVAILABLE, CASTING, WAITING, CAUGHT }`. Her state, spritesheet'teki belirli frame aralıklarına karşılık geliyor (CASTING: 0-2, WAITING: 3-5, CAUGHT: 6).
+--`FISHING` ve `REELING` state'leri `CASTING` ve `WAITING` state'leri olarak değiştirildi.
+
+`src/Fishing.cpp`
+--`Update` fonksiyonu animasyon kontrolü ile genişletildi. F tuşuna basıldığında `currentState = States::CASTING` ve `player.state = State::FISHING` set ediliyor, `player.fishAnim->SetRange(0, 2, false)` ile cast animasyonu başlatılıyor (one-shot).
+--`CASTING` state'inde cast animasyonu bittiğinde (`player.fishAnim->finished`) otomatik olarak `WAITING` state'ine geçiliyor ve `SetRange(3, 5, true)` ile bekleme loop'u başlatılıyor.
+--`WAITING` state'inde timer dolduğunda `CAUGHT` state'ine geçiliyor ve `SetRange(6, 6, false)` ile çekme animasyonu oynatılıyor.
+--Her state çıkışında (balık yakalandı, kaçtı, hareket edildi) `currentState = States::NOT_AVAILABLE` ve `player.state = State::IDLE` olarak sıfırlanıyor.
+--`player.fishAnim->Update(dt)` çağrısı `CASTING`, `WAITING` ve `CAUGHT` state'lerinde yapılarak animasyon zamanlaması merkezi olarak kontrol ediliyor.
+
+`.gitignore`
+saves klasörü .gitignore dosyasına eklendi.
+
+NOT: Animasyon ve fishing branchleri birleştirildi ve merge conflict'ler çözüldü.

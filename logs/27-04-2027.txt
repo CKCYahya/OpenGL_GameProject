@@ -1,0 +1,7 @@
+gcc güncellemesi ortam hazırlığının ve build kurulumunun yapılması.
+
+src/Fishing.cpp
+-- hasReleasedKey ve isFDown adında 2 boolean değişken eklendi. hasReleasedKey f'ye her basıldığında false oluyor, her çekildiğinde true oluyor. Böylelikle f tuşuna basılı tutarak kolayca balık tutmayı engellemek amaçlandı. isFDown değişkeni, f tuşuna 1 kere basıldığında true oluyor.
+-- canAction ise hasReleasedKey ve isFDown değişkenlerinin AND işlemidir. Yani F tuşuna basıldıysa ve hasReleasedKey true ise canAction true oluyor.
+-- Balık oltaya takıldığında tekrardan f tuşuna izin açılıyor ve böylelikle spam yaparak tutma engellendi.
+-- casting ve waiting durumlarında hareket edilirse balık tutma işlemi iptal ediliyor.

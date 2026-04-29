@@ -1,27 +1,129 @@
-#include "Fishing.h"
+#include "../Header/Fishing.h"
+#include "../Header/GameMap.h"
+#include "Player.h"
 #include <iostream>
 
-void Fishing::fishing(Player &player,
-                   std::map<int, std::unique_ptr<Items>> &itemList) {
+void Fishing::Catch(Player &player,
+                    std::map<int, std::unique_ptr<Items>> &itemList,
+                    GameMap &gameMap) {
+  auto it = fishingLootTable.find(waterType);
 
-        if (player.slots[player.selectedSlot].itemID == 0 && player.state == State::IDLE) {
-            std::cout << "Fishing action triggered!" << std::endl;
-            // Here you would implement the actual fishing logic, such as:
-            // - Check if player is near water
-            // - Start a fishing mini-game or timer
-            // - Determine if a fish is caught and what type
-            // - Add the caught fish to the player's inventory
-        } else {
-            std::cout << "You need a fishing rod to fish!" << std::endl;
-        }
+  if (it == fishingLootTable.end()) {
+    return;
+  }
+
+  int chances = rand() % 100;
+
+  for (const auto &loot : it->second) {
+    if (chances < loot.maxChance) {
+      Items::AddItem(player, loot.itemID, loot.itemName);
+      break;
     }
+  }
+}
 
-bool Fishing::isPlayerNearWater(const Player &player, const NewMap &gameMap) {
-    // This function checks if the player is near water tiles in the game map.
-    // You would implement this by checking the player's position against the
-    // waterCache in the GameMap to see if any water tiles are within a certain
-    // radius of the player.
-    // Check if there are any water tiles at certain distances from the player and its direction
-    
-return false; // Placeholder return value, replace with actual logic
+void Fishing::Update(GLFWwindow *window, float dt, Player &player,
+                     std::map<int, std::unique_ptr<Items>> &itemList,
+                     GameMap &gameMap) {
+  // Update the lock state
+  if (glfwGetKey(window, GLFW_KEY_F) == GLFW_RELEASE) {
+    hasReleasedKey = true;
+  }
+
+  bool isFDown = (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS);
+  bool canAction = (isFDown && hasReleasedKey);
+
+  // --- Check availability ---
+  if (currentState == States::NOT_AVAILABLE ||
+      currentState == States::AVAILABLE) {
+    waterType = gameMap.checkWater(player.newRayEnd.x, player.newRayEnd.y);
+    if (waterType == 2014 || waterType == 2015 || waterType == 2016) {
+      currentState = States::AVAILABLE;
+      if (canAction && player.state == State::IDLE) {
+        // Start fishing
+        hasReleasedKey = false; // Lock it!
+        currentState = States::CASTING;
+        player.state = State::FISHING;
+        player.fishAnim->SetRange(0, 2, false); // Frames 0-2, one-shot
+        timer = 2.0f + static_cast<float>(rand()) /
+                           (static_cast<float>(RAND_MAX / (5.0f - 2.0f)));
+      }
+    } else {
+      currentState = States::NOT_AVAILABLE;
+      if (player.state == State::FISHING)
+        player.state = State::IDLE;
+    }
+  }
+
+  // --- Casting state ---
+  else if (currentState == States::CASTING) {
+    if (isMoving(player))
+      return;
+
+    if (canAction) {
+      std::cout << "Fishing cancelled by user." << std::endl;
+      hasReleasedKey = false; // Lock to prevent immediate restart
+      player.state = State::IDLE;
+      currentState = States::NOT_AVAILABLE;
+    } else {
+      player.fishAnim->Update(dt);
+
+      // Cast animation finished -> transition to WAITING
+      if (player.fishAnim->finished) {
+        currentState = States::WAITING;
+        player.fishAnim->SetRange(3, 5, true); // Frames 3-5, loop
+      }
+    }
+  }
+
+  // --- Waiting state ---
+  else if (currentState == States::WAITING) {
+    if (isMoving(player))
+      return;
+
+    if (canAction) {
+      std::cout << "Fishing cancelled by user." << std::endl;
+      hasReleasedKey = false;
+      player.state = State::IDLE;
+      currentState = States::NOT_AVAILABLE;
+    } else {
+      player.fishAnim->Update(dt);
+      timer -= dt;
+
+      if (timer <= 0.0f) {
+        std::cout << "Fish is biting! PRESS FISH BUTTON NOW!" << std::endl;
+        currentState = States::CAUGHT;
+        player.fishAnim->SetRange(6, 6, false); // Frame 6, one-shot
+        timer = 1.5f; // Player has 1.5 seconds to react
+      }
+    }
+  }
+
+  // --- Caught state ---
+  else if (currentState == States::CAUGHT) {
+    player.fishAnim->Update(dt);
+    timer -= dt;
+
+    if (canAction) {
+      Catch(player, itemList, gameMap);
+      hasReleasedKey = false;
+      currentState = States::NOT_AVAILABLE;
+      player.state = State::IDLE;
+    } else if (timer <= 0.0f) {
+      std::cout << "The fish got away..." << std::endl;
+      currentState = States::NOT_AVAILABLE;
+      player.state = State::IDLE;
+    }
+  }
+
+  isFishing = (player.state == State::FISHING);
+}
+
+bool Fishing::isMoving(Player &player) {
+  if (player.state == State::MOVING) {
+    std::cout << "You moved! Fishing cancelled." << std::endl;
+    currentState = States::NOT_AVAILABLE;
+    return true;
+  }
+  return false;
 }
