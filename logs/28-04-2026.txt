@@ -1,0 +1,22 @@
+`Header/GameMap.h`
+--`InstanceData` yapısına `float isWater` değişkeni eklendi. Shader tarafındaki `aIsWater` özniteliğiyle (attribute 7) tam uyum sağlanması için `bool` yerine `float` tercih edildi.
+--`GameMap` sınıfına `glm::vec2 temp` üyesi eklendi. Akan su animasyonu döngüsünde, su bloğunun ilk karesine ait texture offsetini saklayarak dairesel kaydırmayı  tamamlamak ve döngü içinde yerel değişken hatalarını önlemek için kullanılıyor.
+
+`src/GameMap.cpp`
+--`Draw` fonksiyonu içerisine "Akan Su" mekaniği eklendi. `glfwGetTime()` ile 0.5 saniyede bir tetiklenen zamanlayıcı, su karolarının UV koordinatlarını güncelleyerek dinamik bir akış efekti oluşturur.
+--Döngü Mantığı: `instanceDataArray` üzerinde kurulan döngü, ardışık su karolarını (water segments) tespit eder. Her segmentin başlangıç offsetini saklar ve karoların offsetlerini birer adım ileriye kopyalar. Segmentin bittiği noktada (bir sonraki karo su değilse), saklanan ilk offseti son karoya atayarak segment içerisinde sürekli bir döngü oluşturur.
+--`instanceVBO->Bind()`: Güncelleme öncesi instance verilerini tutan Vertex Buffer Object `GL_ARRAY_BUFFER` hedefine bağlanır.
+--`glBufferSubData`: GPU üzerindeki mevcut tamponun (buffer) içeriğini tümüyle yeniden oluşturmak yerine, sadece değişen veri bloğunu (`instanceDataArray`) günceller. Bu, `glBufferData` kullanımına göre çok daha performanslı bir yöntemdir ve CPU-GPU veri transferini optimize eder.
+
+NOT: Su animasyonu mekaniği, shader'daki `texOffset` özniteliğinin CPU tarafında periyodik olarak kaydırılması ve VBO sub-data update yöntemiyle GPU'ya yansıtılması prensibiyle çalışır.
+
+`Header/InteractionUI.h` & `src/InteractionUI.cpp`
+--`InteractionUI.h` dosyasındaki karmaşık include yapısı temizlendi ve gereksiz `#include` satırları kaldırılarak `class Window;`, `class Player;` gibi "Forward Declaration" (Ön Bildirim) yapısına geçildi. Bu sayede "Incomplete Type" ve "STL1003" hataları önlendi.
+--Arayüzün (ImGui) sadece etkileşim başladıktan 0.5 saniye sonra belirmesi için `InteractionUI` sınıfına `lastTime` üyesi eklendi ve zamanlama mantığı düzeltildi.
+--Karakterin kafasının üstünde yazının çıkması için, dünya koordinatları (World Space), kamera zoom'u ve Y ekseni tersliği hesaba katılarak ekran koordinatlarına (Screen Space) çevrildi.
+
+`Header/Items.h` & `src/Items.cpp`
+--`isItemInRange` fonksiyonunun imzasındaki `const Player &player` kısıtlaması `Player &player` olarak güncellendi. Bu sayede fonksiyon sadece mesafeyi ölçmekle kalmayıp, karakterin alanına girildiğinde `player.state = State::INTERACTING;` atamasını başarıyla yapabilir duruma getirildi ("Cannot assign to variable" hatası çözüldü).
+
+`src/Player.cpp`
+--`Player::Draw` fonksiyonundaki büyük bir çizim (render) hatası (glitch) giderildi. Eskiden karakter sadece `MOVING` veya `IDLE` durumundayken texture bağlıyordu (bind). 'E' tuşuna basılıp karakter `INTERACTING` durumuna geçtiğinde hiçbir texture bağlanmadığı için hafızadaki son texture (örneğin palamut veya harita) karakterin üzerine basılıyordu. Mantık `} else {` şekline çevrilerek `MOVING` dışındaki tüm durumlarda (`INTERACTING`, `FULL_INVENTORY`, `FISHING`) karakterin doğru "Idle" görsellerini kullanması sağlandı.

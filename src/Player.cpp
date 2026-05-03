@@ -224,6 +224,7 @@ ImTextureID Player::Interact(Items &item) {
     } else if (slotIndex == -1) {
       std::cout << "Inventory full! Item '" << item.name
                 << "' could not be added." << std::endl;
+      state = State::FULL_INVENTORY;
       return 0; // No slot available, return 0 to indicate failure
     }
     item.isActive = !item.isActive; // Toggle item active state on interaction

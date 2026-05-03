@@ -1,6 +1,7 @@
 #include "Camera.h"
 #include "Fishing.h"
 #include "GameMap.h"
+#include "InteractionUI.h"
 #include "Items.h"
 #include "Panel.h"
 #include "Player.h"
@@ -99,6 +100,7 @@ int main() {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   Panel panel;
   Fishing fishingSys;
+  InteractionUI interactionUI;
   glfwSwapInterval(1);
   glfwSwapInterval(0);
   const double targetFPS = 144.0;
@@ -129,18 +131,16 @@ int main() {
 
       // Update Player
       player.Update(window.getGLFWWindow(), deltaTime, gameMap);
-      // Toggle Camera Mode ("C" key)
-      if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_C) == GLFW_PRESS) {
-        state = 2;
-      } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_C) ==
-                     GLFW_RELEASE &&
-                 state == 2) {
-        camera.mode =
-            (camera.mode == CAMERA_FREE) ? CAMERA_LOCKED : CAMERA_FREE;
-        state = 0;
+
+      bool nearItem = false;
+      for (const auto &itemPair : itemList) {
+        if (itemPair.second->isActive) {
+          if (itemPair.second->isItemInRange(player)) {
+            nearItem = true;
+          }
+        }
       }
-      // Update Player
-      player.Update(window.getGLFWWindow(), (float)deltaTime, gameMap);
+      interactionUI.showInteractionUI(fishingSys, player, nearItem);
 
       // Toggle Camera Mode ("C" key)
       if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_C) == GLFW_PRESS) {
@@ -278,6 +278,11 @@ int main() {
         ImGui::Text("Press 'C' to toggle");
       }
       ImGui::End();
+
+      // --- Interaction Popup UI ---
+      if (interactionUI.state == PopupState::SHOW) {
+        interactionUI.Draw(&camera, &player, &window);
+      }
 
       panel.Update(window, player);
 

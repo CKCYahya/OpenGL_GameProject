@@ -118,6 +118,9 @@ void GameMap::SetupMesh() {
       InstanceData inst;
       inst.model = model;
       inst.texOffset = glm::vec2(uOffset, vOffset);
+      if (waterCache[tileIndex] != 0) {
+        inst.isWater = 1.0f;
+      }
       instanceDataArray.push_back(inst);
     }
   }
@@ -141,6 +144,11 @@ void GameMap::SetupMesh() {
   glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, sizeof(InstanceData),
                         (void *)(sizeof(glm::mat4)));
   glVertexAttribDivisor(6, 1);
+
+  glEnableVertexAttribArray(7);
+  glVertexAttribPointer(7, 1, GL_FLOAT, GL_FALSE, sizeof(InstanceData),
+                        (void *)(sizeof(glm::mat4) + sizeof(glm::vec2)));
+  glVertexAttribDivisor(7, 1);
 
   instanceVBO->Unbind();
   mapVAO->Unbind();
@@ -178,6 +186,29 @@ void GameMap::Draw(Shader &shader, Camera &camera) {
 
   // Draw instances statically
   if (!instanceDataArray.empty()) {
+    static float lastUpdateTime = 0.0f;
+    float currentTime = glfwGetTime();
+    if (currentTime - lastUpdateTime >= 0.5f) {
+      lastUpdateTime = currentTime;
+      bool firstEncountered = false;
+      for (int i = 0; i < (int)instanceDataArray.size() - 1; i++) {
+        if (instanceDataArray[i].isWater == 1.0f) {
+          if (firstEncountered == false) {
+            temp = instanceDataArray[i].texOffset;
+            firstEncountered = true;
+          }
+          instanceDataArray[i].texOffset = instanceDataArray[i + 1].texOffset;
+          if (instanceDataArray[i + 1].isWater != 1.0f) {
+            instanceDataArray[i].texOffset = temp;
+          }
+        }
+      }
+      instanceVBO->Bind();
+      glBufferSubData(GL_ARRAY_BUFFER, 0,
+                      instanceDataArray.size() * sizeof(InstanceData),
+                      instanceDataArray.data());
+      instanceVBO->Unbind();
+    }
     mapVAO->Bind();
     glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0,
                             (GLsizei)instanceDataArray.size());
