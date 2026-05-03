@@ -307,15 +307,16 @@ int main() {
         glm::vec3 minimapPos =
             player.Position - glm::vec3(0.0f, player.size * 0.6f, 0.0f);
         gameMap.DrawMinimap(minimapPos, camera, winWidth, winHeight);
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        window.SwapBuffers();
       }
+      ImGui::Render();
+      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+      window.SwapBuffers();
       window.PollEvents();
     }
+  }
 
-    textureShader.Delete();
+  textureShader.Delete();
     mapShader.Delete();
 
     // Explicit ImGui Cleanup
@@ -324,4 +325,4 @@ int main() {
     ImGui::DestroyContext();
 
     return 0;
-  }
+}

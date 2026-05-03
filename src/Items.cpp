@@ -227,7 +227,7 @@ void Items::FromJson(std::map<int, std::unique_ptr<Items>> &itemList,
   itemList.clear();
   for (auto &item : j["items"]) {
     auto newItem =
-        std::make_unique<Items>(item["name"], glm::vec3(0.0f, 0.0f, 0.0f));
+        std::make_unique<Items>(item["name"], glm::vec3(0.0f, 0.0f, 0.0f), item["ID"]);
     newItem->ID = item["ID"];
     newItem->atlasIndex = item["atlasIndex"];
     newItem->position.x = item["position"]["x"];
