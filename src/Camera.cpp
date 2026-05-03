@@ -101,5 +101,28 @@ void Camera::Inputs(GLFWwindow *window, float dt, glm::vec3 targetPos,
     Position.y = minY;
   if (Position.y > maxY)
     Position.y = maxY;
+}
 
+nlohmann::json Camera::ToJson() {
+  nlohmann::json j;
+  j["position"]["x"] = Position.x;
+  j["position"]["y"] = Position.y;
+  j["position"]["z"] = Position.z;
+  j["mode"] = mode;
+  j["zoom"] = zoom;
+  return j;
+}
+
+void Camera::Reset() {
+  Position = glm::vec3(0.0f, 0.0f, 0.0f);
+  zoom = 1.0f;
+  mode = CAMERA_FREE;
+}
+
+void Camera::FromJson(nlohmann::json j) {
+  Position.x = j["position"]["x"];
+  Position.y = j["position"]["y"];
+  Position.z = j["position"]["z"];
+  mode = j["mode"];
+  zoom = j["zoom"];
 }

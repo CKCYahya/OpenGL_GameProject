@@ -3,6 +3,7 @@ project(GameProject VERSION 1.0)
 
 # C++ Standartları
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -64,6 +65,7 @@ add_executable(GameProject
     src/Fishing.cpp
     src/Animations.cpp
     src/InteractionUI.cpp
+    src/Menu.cpp
 )
 
 # Projenin Başlık (Header) Dosyalarının Yolları

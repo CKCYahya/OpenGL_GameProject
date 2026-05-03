@@ -265,6 +265,8 @@ void Player::dropItem(int selectedSlot,
     item->position = this->Position;
     item->isActive = true;
 
+    item->isActive = true;
+
     slots[selectedSlot].itemID = -1;
     slots[selectedSlot].atlasID = 0;
     slots[selectedSlot].count = 0;
@@ -313,4 +315,65 @@ void Player::getAnimation(std::string animType, int direction) {
 
   if (textures[animType][direction])
     textures[animType][direction]->Bind();
+}
+
+nlohmann::json Player::ToJson() {
+  nlohmann::json j;
+
+  j["position"]["x"] = Position.x;
+  j["position"]["y"] = Position.y;
+  j["position"]["z"] = Position.z;
+  j["direction"] = direction;
+  j["selectedSlot"] = selectedSlot;
+  j["speed"] = speed;
+  j["state"] = static_cast<int>(state);
+
+  nlohmann::json inventoryArray = nlohmann::json::array();
+
+  for (int i = 0; i < slotAmount; ++i) {
+    nlohmann::json slotData;
+    slotData["itemID"] = slots[i].itemID;
+    slotData["count"] = slots[i].count;
+    slotData["atlasID"] = slots[i].atlasID;
+    slotData["uv0"] = {slots[i].uv0.x, slots[i].uv0.y};
+    slotData["uv1"] = {slots[i].uv1.x, slots[i].uv1.y};
+    inventoryArray.push_back(slotData);
+  }
+  j["inventory"] = inventoryArray;
+
+  return j;
+}
+
+void Player::Reset() {
+  Position = glm::vec3(0.0f, 0.0f, 0.0f);
+  direction = 0;
+  selectedSlot = 0;
+  speed = 300.0f;
+  state = State::IDLE;
+  for (int i = 0; i < slotAmount; ++i) {
+    slots[i].itemID = -1;
+    slots[i].atlasID = 0;
+    slots[i].count = 0;
+    slots[i].uv0 = ImVec2(0.0f, 0.0f);
+    slots[i].uv1 = ImVec2(0.0f, 0.0f);
+  }
+}
+
+void Player::FromJson(nlohmann::json j) {
+  Position.x = j["position"]["x"];
+  Position.y = j["position"]["y"];
+  Position.z = j["position"]["z"];
+  direction = j["direction"];
+  selectedSlot = j["selectedSlot"];
+  speed = j["speed"];
+  state = static_cast<State>(j["state"]);
+  for (int i = 0; i < slotAmount; ++i) {
+    slots[i].itemID = j["inventory"][i]["itemID"];
+    slots[i].count = j["inventory"][i]["count"];
+    slots[i].atlasID = j["inventory"][i]["atlasID"];
+    slots[i].uv0.x = j["inventory"][i]["uv0"][0];
+    slots[i].uv0.y = j["inventory"][i]["uv0"][1];
+    slots[i].uv1.x = j["inventory"][i]["uv1"][0];
+    slots[i].uv1.y = j["inventory"][i]["uv1"][1];
+  }
 }

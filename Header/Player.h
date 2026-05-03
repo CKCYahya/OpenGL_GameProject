@@ -14,6 +14,10 @@
 #include <string>
 #include <vector>
 
+#include "nlohmann/json.hpp"
+
+using json = nlohmann::json;
+
 class Panel;
 class GameMap;
 class Items;
@@ -76,6 +80,9 @@ public:
   ImTextureID Interact(Items &item);
   void dropItem(int selectedSlot,
                 std::map<int, std::unique_ptr<Items>> &itemList);
+  nlohmann::json ToJson();
+  void Reset();
+  void FromJson(nlohmann::json j);
   void drawItem(Shader &shader);
   void getAnimation(std::string animType, int direction);
 };

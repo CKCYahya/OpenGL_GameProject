@@ -1,4 +1,4 @@
-﻿#ifndef CAMERA_CLASS_H
+#ifndef CAMERA_CLASS_H
 #define CAMERA_CLASS_H
 #define GLM_ENABLE_EXPERIMENTAL
 
@@ -11,7 +11,9 @@
 #include "glm/gtx/vector_angle.hpp"
 
 #include "Shader.h"
+#include "nlohmann/json.hpp"
 
+using json = nlohmann::json;
 enum CameraMode { CAMERA_FREE, CAMERA_LOCKED };
 
 class Camera {
@@ -43,6 +45,9 @@ public:
 
   void Inputs(GLFWwindow *window, float dt, glm::vec3 targetPos,
               glm::vec4 mapBounds);
+  nlohmann::json ToJson();
+  void Reset();
+  void FromJson(nlohmann::json j);
 };
 
 #endif
