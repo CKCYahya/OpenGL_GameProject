@@ -107,8 +107,10 @@ void GameMap::SetupMesh() {
       int row = localID / cols;
 
       int texRow = totalRows - 1 - row;
-      float uOffset = (col * 32.0f) / atlasWidth;
-      float vOffset = (texRow * 32.0f) / atlasHeight;
+      // Half-pixel inset to prevent tile seam bleeding
+      float padding = 0.5f;
+      float uOffset = (col * 32.0f + padding) / atlasWidth;
+      float vOffset = (texRow * 32.0f + padding) / atlasHeight;
 
       glm::mat4 model = glm::mat4(1.0f);
       model = glm::translate(model, glm::vec3(xPos, yPos, 0.0f));
@@ -166,7 +168,10 @@ void GameMap::Draw(Shader &shader, Camera &camera) {
   float atlasWidth = (float)atlasTexture->width;
   float atlasHeight = (float)atlasTexture->height;
 
-  glm::vec2 texScale(32.0f / atlasWidth, 32.0f / atlasHeight);
+  // Shrink texScale to match the half-pixel inset on each side
+  float tilePadding = 0.5f;
+  glm::vec2 texScale((32.0f - 2.0f * tilePadding) / atlasWidth,
+                     (32.0f - 2.0f * tilePadding) / atlasHeight);
 
   glUniform2fv(glGetUniformLocation(shader.ID, "texScale"), 1,
                glm::value_ptr(texScale));

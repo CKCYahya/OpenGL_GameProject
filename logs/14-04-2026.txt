@@ -1,3 +1,12 @@
+src/GameMap.cpp 
+Tile seam bleeding (döşeme çizgisi) sorununu çözmek için UV Padding (iç kenar boşluğu) uygulandı. SetupMesh fonksiyonunda UV hesaplanırken uOffset ve vOffset değerlerine 0.5f padding eklenerek her tile'ın doku başlangıcından yarım piksel içeri girildi. 
+Texture'un kamera hareketinde komşu tile'lardan piksel örneklemesini (taşma sorununu) engellemek adına, Draw fonksiyonundaki texScale değişkeni de her kenardan 0.5f piksel hesaba katılarak daraltıldı.
+
+src/main.cpp 
+Sistem odaklı V-Sync (glfwSwapInterval(1)) kapatılıp yerine program denetimli 144 FPS kilit mantığı eklendi. targetFPS (144.0) ve frameLimit kullanılarak glfwGetTime() tabanlı bir zamanlayıcı oluşturuldu. 
+currentFrame ve lastFrame arasındaki deltaTime farkı kontrol edilerek oyun mantığı render döngüsüne(if (deltaTime >= frameLimit)) bağlandı. Girdi (input) gecikmesini en aza indirmek ve duyarlılığı artırmak için window.PollEvents()
+metodu döngü sınırının dışına alındı (hareketi pürüzsüzleştiriyor). Ayrıca player.Update ve camera.Inputs metotlarına gönderilen double tipindeki deltaTime veri kaybı uyarılarını gidermek için (float)deltaTime olacak şekilde cast edildi.
+
 `Header/Fishing.h`
 `FishLoot` struct'ı oluşturuldu; her bir balık loot girişi için `maxChance`, `itemID` ve `itemName` alanlarını tutuyor. Kümülatif olasılık tablosu mantığıyla çalışıyor: döngü sırayla kontrol edip ilk eşleşmede duruyor. `fishingLootTable` adında `static const unordered_map` tanımlandı; su tipi (2014, 2015, 2016) bazında her bölgenin balık loot tablosunu veri odaklı (data-driven) şekilde tutuyor. Lufer'in şansı %5'ten %35'e çıkarıldı.
 
