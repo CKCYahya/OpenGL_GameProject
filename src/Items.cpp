@@ -99,18 +99,25 @@ Items::readJsonItems(const char *jsonItems) {
                 int globalID = firstGid + localID;
                 for (const auto &prop : item["properties"]) {
                   std::string propName = prop.value("name", "");
-                  std::string propValue = prop.value("value", "");
+                  std::string propValueStr;
+                  int propValueInt;
+                  if (propName == "item") {
+                    propValueStr = prop.value("value", "");
+                  } else if (propName == "value") {
+                    propValueInt = prop.value("value", 0);
+                  }
                   if (propName == "item") {
                     // Balıkları spawnlama, sadece balık tutmayla elde
                     // edilsinler
-                    if (propValue == "palamut" || propValue == "levrek" ||
-                        propValue == "istavrit" || propValue == "uskumru" ||
-                        propValue == "lufer") {
+                    if (propValueStr == "palamut" || propValueStr == "levrek" ||
+                        propValueStr == "istavrit" ||
+                        propValueStr == "uskumru" || propValueStr == "lufer") {
                       continue;
                     }
                     auto newItem = std::make_unique<Items>(
-                        propValue, glm::vec3(0.0f, 0.0f, 0.0f), localID);
+                        propValueStr, glm::vec3(0.0f, 0.0f, 0.0f), localID);
                     newItem->atlasIndex = i;
+                    newItem->value = propValueInt;
                     int rastgeleSayi = min + (std::rand() % (max - min + 1));
                     newItem->position =
                         glm::vec3(rastgeleSayi, rastgeleSayi, 0.0f);
@@ -226,8 +233,8 @@ void Items::FromJson(std::map<int, std::unique_ptr<Items>> &itemList,
                      nlohmann::json j) {
   itemList.clear();
   for (auto &item : j["items"]) {
-    auto newItem =
-        std::make_unique<Items>(item["name"], glm::vec3(0.0f, 0.0f, 0.0f), item["ID"]);
+    auto newItem = std::make_unique<Items>(
+        item["name"], glm::vec3(0.0f, 0.0f, 0.0f), item["ID"]);
     newItem->ID = item["ID"];
     newItem->atlasIndex = item["atlasIndex"];
     newItem->position.x = item["position"]["x"];
