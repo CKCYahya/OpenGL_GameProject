@@ -1,0 +1,16 @@
+Items.cpp:    
+--Oyunda al sat mekanizmasını gerçekleştirmek için tiled uygulamasından json dosyası içerisine itemlere value atamaları yapıldı.
+--Itemlerin value değerlerinin çekilmesi için readJsonItems fonksiyonu düzenlendi. value değerleri integer olduğu için buna uygun ayrı bir propValueInt tanımlandı. Bu değerin her item içerisinde bulunan value değerine atanması gerçekleştirildi.
+
+NewMap.cpp/NewMap.h:
+--Tiled uygulamasında satış tezgahının bulunduğu alan için ayrı bir layer tanımlandı.
+--Bu layer bundan sonra oyun içerisinde 1. layer üzerine konulan ağaç, tezgah gibi nesnelerin bulunduğu layer olacak.
+--mapCache size değeri 2 katına çıkarılarak içerisine 2. layer verileri eklendi.
+--tileIDs2 2.layerda bulunan veriler için eklendi.
+--Collision ve water layerlarının her biri ayrı ayrı mapCache içerisine eklendi.
+
+Vendor.h:
+--Vendor adında satış menüsü, al sat işlemleri gibi özellikler için yeni bir sınıf oluşturuldu.
+
+Vendor.cpp:
+--Vendor sınıfı için gerekli fonksiyonlar tanımlandı.

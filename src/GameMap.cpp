@@ -13,9 +13,13 @@ GameMap::GameMap(const char *mapFile) {
 
   // Tiled stores data as 1D array row-by-row
   const auto &tiles = newMap->getTileIDs();
-  mapCache.resize(tiles.size());
+  const auto &tiles2 = newMap->getTileIDs();
+  mapCache.resize(tiles.size() + tiles2.size());
   for (size_t i = 0; i < tiles.size(); ++i) {
     mapCache[i].gid = tiles[i];
+  }
+  for (size_t i = 0; i < tiles2.size(); ++i) {
+    mapCache[i + tiles.size()].gid = tiles2[i];
   }
 
   // Fill Collision Cache

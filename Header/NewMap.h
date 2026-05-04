@@ -1,14 +1,13 @@
 #ifndef NEWMAP_H
 #define NEWMAP_H
 
-#include "nlohmann/json.hpp"
 #include "glad/glad.h"
+#include "nlohmann/json.hpp"
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
-
 
 using json = nlohmann::json;
 
@@ -36,6 +35,7 @@ private:
   int tileSize;
 
   std::vector<int> tileIDs;      // Visual GIDs
+  std::vector<int> tileIDs2;     // Visual GIDs
   std::vector<int> collisionIDs; // Collision GIDs
 
   std::vector<unsigned char> minimapColors;
