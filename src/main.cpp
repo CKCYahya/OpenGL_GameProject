@@ -116,7 +116,7 @@ int main() {
       lastFrame = currentFrame;
 
       glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       ImGui_ImplOpenGL3_NewFrame();
       ImGui_ImplGlfw_NewFrame();
       ImGui::NewFrame();
@@ -238,16 +238,17 @@ int main() {
 
         // --- RENDER ---
 
-        // Activate Map Shader and Update Matrix
+        // Activate Map Shader and Update Matrix for Layer 1
         mapShader.Activate();
         camera.updateMatrix(-100.0f, 100.0f, mapShader, "camMatrix");
+        gameMap.DrawLayer1(mapShader, camera);
 
-        // Draw Map
-        gameMap.Draw(mapShader, camera);
-
-        // Activate Texture Shader and Update Matrix for entities
+        // Activate Texture Shader and Update Matrix for entities (Player,
+        // Items)
         textureShader.Activate();
         camera.updateMatrix(-100.0f, 100.0f, textureShader, "camMatrix");
+
+        // Draw Items (Below player/Layer 2 usually)
         if (!itemList.empty()) {
           itemList.begin()->second->drawAtlas(textureShader, itemList, winWidth,
                                               winHeight, camera);
@@ -256,20 +257,10 @@ int main() {
         // Draw Player
         player.Draw(textureShader);
 
-        // Draw Items
-        // Activate Texture Shader and Update Matrix for entities
-        textureShader.Activate();
-        camera.updateMatrix(-100.0f, 100.0f, textureShader, "camMatrix");
-
-        // Draw Player
-        player.Draw(textureShader);
-
-        // Draw Items
-
-        if (!itemList.empty()) {
-          itemList.begin()->second->drawAtlas(textureShader, itemList, winWidth,
-                                              winHeight, camera);
-        }
+        // Activate Map Shader again for Layer 2 (Overlays like trees)
+        mapShader.Activate();
+        camera.updateMatrix(-100.0f, 100.0f, mapShader, "camMatrix");
+        gameMap.DrawLayer2(mapShader, camera);
 
         // --- IMGUI RENDER ---
         const float PAD = 10.0f;
@@ -317,12 +308,12 @@ int main() {
   }
 
   textureShader.Delete();
-    mapShader.Delete();
+  mapShader.Delete();
 
-    // Explicit ImGui Cleanup
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+  // Explicit ImGui Cleanup
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
 
-    return 0;
-}
+  return 0;
+}

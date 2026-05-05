@@ -21,6 +21,7 @@ public:
 
   // Visual Layer
   const std::vector<int> &getTileIDs() const { return tileIDs; }
+  const std::vector<int> &getTileIDs2() const { return tileIDs2; }
 
   // Collision Layer
   const std::vector<int> &getCollisionIDs() const { return collisionIDs; }

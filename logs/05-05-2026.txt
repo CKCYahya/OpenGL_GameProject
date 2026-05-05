@@ -1,0 +1,14 @@
+Sunumdaki eksiklikler giderildi ve sunum yapıldı.
+
+GameMap.cpp
+Haritaya yeni eklenen layer 2'deki objelerin de instanced rendering ile çizilmesi için layer2DataArray oluşturuldu ve instanceDataArray'a eklendi.
+Layer 1 instanced rendering için yapılan ne varsa aynısı 2.layer için de yapıldı.
+Oyun artık 2 katmanlı bir harita üzerinde çalışıyor. Arkada zemin önde ise ağaç,ev,kayalar vb olacak şekilde ayarlandı.
+Katmanların öncelik sırasını düzenlemek adına map 2 farklı draw çağrısı ile çiziliyor. drawLayer1() çağrısı player draw() çağrısından önce yapılıyor. bu da zeminin player arkasında kalmasını sağlıyor. drawLayer2() çağrısı player draw() çağrısından sonra yapılıyor. bu da objelerin player'ın önünde kalmasını sağlıyor.
+
+GameMap.h
+2.layer verilerini tutmak için layer2Cache eklendi.
+
+main.cpp
+Render pipeline'ı güncellendi ve render edilecek katman sayısı 2 olarak artırıldı.
+Karakterin çizim fonksiyonu 2 layer arasına alındı.
