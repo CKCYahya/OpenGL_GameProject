@@ -257,7 +257,9 @@ void Menu::Draw(Window *window, Shader *shader, Player *player, Camera *camera,
   if (state == MenuState::EXIT) {
     glfwSetWindowShouldClose(window->getGLFWWindow(), GLFW_TRUE);
   }
-
+  if (state == MenuState::VENDOR) {
+    vendorMenu(*player);
+  }
   ImGui::PopStyleVar(3);
   ImGui::PopStyleColor(5);
 }
@@ -355,7 +357,7 @@ void Menu::newSaveSection(Player *player, Camera *camera,
   ImGui::PopStyleColor(5);
 }
 
-void Menu::vendorMenu(Items &item, Player &player, GameMap &gameMap) {
+void Menu::vendorMenu(Player &player) {
   ImGui::Begin("Vendor");
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 3.0f);
@@ -370,12 +372,10 @@ void Menu::vendorMenu(Items &item, Player &player, GameMap &gameMap) {
   ImGui::Text("Vendor Menu");
   ImGui::Spacing();
   if (ImGui::Button("Sell Fishes")) {
-    state = MenuState::SELL;
     Vendor::Sell(player);
   }
   if (ImGui::Button("Upgrade")) {
-    state = MenuState::UPGRADE;
-    Vendor::Upgrade(item, player);
+    Vendor::Upgrade(player);
   }
 
   ImGui::Spacing();

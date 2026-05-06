@@ -16,3 +16,24 @@ static link
 Items.cpp
 --Yeni vendor özelliği için itemlerin değerlerini tutan value değişkenini propValueInt değişkenine atarken oltanın değeri 0 olduğu için render edilmiyordu.
 --Bunu önlemek için if kontrolü eklendi.
+
+Header/GameMap.h & src/GameMap.cpp
+--`interactionCache` dizisi ve `checkInteraction` fonksiyonu eklendi. Harita üzerinde belirli tile ID'lerine (Örn: 2472) sahip bölgelerin "etkileşim alanı" (Shop/Vendor) olarak tanımlanması sağlandı.
+--Koordinattan tile indeksi hesaplama mantığı `abstractLayerTileIndex` fonksiyonunda toplandı. Bu sayede collision ve interaction kontrolleri için kod tekrarı önlendi.
+
+Header/Player.h & src/Player.cpp
+--`Player` sınıfına `money` ve `InventorySlot` yapısına `itemValue` alanları eklendi.
+--`checkInteractionZone` fonksiyonu eklendi. Oyuncunun o an harita üzerinde bir etkileşim tile'ı üzerinde olup olmadığı kontrol edilerek Vendor menüsünün açılma şartı belirlendi.
+--`ToJson` ve `FromJson` fonksiyonları güncellendi. Oyuncunun kazandığı paranın ve çantasındaki eşyaların değerlerinin kayıt dosyasına (save) işlenmesi sağlandı.
+
+Header/Vendor.h & src/Vendor.cpp
+--Ekonomi mantığı için `Sell` (Satış) fonksiyonu implemente edildi. Envanterdeki "olta" dışındaki tüm değerli eşyaların (balıklar vb.) altına çevrilmesi ve slotların boşaltılması mekanizması kuruldu.
+--Ekipman geliştirme sistemi için `Upgrade` fonksiyon imzaları eklendi.
+
+Header/Menu.h & src/Menu.cpp
+--`MenuState` içine `VENDOR` durumu eklendi. Satıcı arayüzü için gerekli UI state yönetimi sağlandı.
+--`vendorMenu` fonksiyonu ile ImGui tabanlı dükkan arayüzü tasarlandı. `moneyDisplay` (Cüzdan HUD) fonksiyonu ile oyuncunun mevcut parası ekranın bir köşesinde şeffaf bir panel olarak gösterilmeye başlandı.
+--`locked` değişkeni eklendi. Dükkan menüsü açıkken Escape tuşunun ana menüyü açıp arayüzleri çakıştırması engellendi.
+
+src/main.cpp
+--Oyun döngüsüne `E` tuşu kontrolü eklendi. Oyuncu interaction bölgesindeyken bu tuşa bastığında `MenuState::VENDOR` durumuna geçiş tetikleniyor.

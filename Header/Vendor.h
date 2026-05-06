@@ -18,7 +18,7 @@ public:
   void Update(GLFWwindow *window, int direction, int currentFrame,
               glm::vec3 playerPos, glm::vec3 endWorld);
   static void Sell(Player &player);
-  static void Upgrade(Items &item, Player &player);
+  static void Upgrade(Player &player);
 
 private:
   glm::vec3 startPos;

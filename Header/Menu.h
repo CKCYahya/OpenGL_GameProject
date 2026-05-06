@@ -30,8 +30,6 @@ enum class MenuState {
   SAVE,
   LOAD,
   EXIT,
-  UPGRADE,
-  SELL,
   VENDOR,
 };
 
@@ -64,7 +62,7 @@ public:
   void GetSaveNames();
   void newSaveSection(Player *player, Camera *camera,
                       std::map<int, std::unique_ptr<Items>> *itemList);
-  void vendorMenu(Items &item, Player &player, GameMap &gameMap);
+  void vendorMenu(Player &player);
   void moneyDisplay(Player &player);
 };
 
