@@ -41,7 +41,7 @@ target_include_directories(imgui PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/glfw/include
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/glad/include
 )
-target_compile_definitions(imgui PRIVATE GLFW_INCLUDE_NONE)
+target_compile_definitions(imgui PRIVATE GLFW_INCLUDE_NONE GLFW_DLL)
 
 # Ana Oyun Uygulaması (Tüm kaynak kodlar ve glad.c)
 add_executable(GameProject
@@ -80,15 +80,15 @@ target_include_directories(GameProject PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/imgui/backends
 )
 
-target_compile_definitions(GameProject PRIVATE GLFW_INCLUDE_NONE)
+target_compile_definitions(GameProject PRIVATE GLFW_INCLUDE_NONE GLFW_DLL)
 
 # Kütüphaneleri Ana Uygulamaya Bağla
 target_link_libraries(GameProject PRIVATE
+    imgui
     glfw
     OpenGL::GL
     glm
     stb_image
-    imgui
     ${CMAKE_DL_LIBS} 
 )
 

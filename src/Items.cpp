@@ -99,9 +99,10 @@ Items::readJsonItems(const char *jsonItems) {
                   std::string propName = prop.value("name", "");
                   std::string propValue = prop.value("value", "");
                   if (propName == "item") {
-                    // Balıkları spawnlama, sadece balık tutmayla elde edilsinler
-                    if (propValue == "palamut" || propValue == "levrek" || 
-                        propValue == "istavrit" || propValue == "uskumru" || 
+                    // Balıkları spawnlama, sadece balık tutmayla elde
+                    // edilsinler
+                    if (propValue == "palamut" || propValue == "levrek" ||
+                        propValue == "istavrit" || propValue == "uskumru" ||
                         propValue == "lufer") {
                       continue;
                     }
@@ -197,59 +198,66 @@ Items *Items::searchItems(std::map<int, std::unique_ptr<Items>> &itemList,
   return nullptr;
 }
 
-glm::vec2 Items::CalculateUV(int itemID, int atlasIndex){
-    int cols = static_cast<int>(atlasWH[atlasIndex].x / 32);
-    int totalRows = static_cast<int>(atlasWH[atlasIndex].y / 32);
-    int col = itemID % cols;
-    int row = itemID / cols;
-    int texRow = totalRows - 1 - row;
-    float uOffset = (col * 32.0f) / atlasWH[atlasIndex].x;
-    float vOffset = (texRow * 32.0f) / atlasWH[atlasIndex].y;
-    return glm::vec2(uOffset, vOffset);
+glm::vec2 Items::CalculateUV(int itemID, int atlasIndex) {
+  int cols = static_cast<int>(atlasWH[atlasIndex].x / 32);
+  int totalRows = static_cast<int>(atlasWH[atlasIndex].y / 32);
+  int col = itemID % cols;
+  int row = itemID / cols;
+  int texRow = totalRows - 1 - row;
+  float uOffset = (col * 32.0f) / atlasWH[atlasIndex].x;
+  float vOffset = (texRow * 32.0f) / atlasWH[atlasIndex].y;
+  return glm::vec2(uOffset, vOffset);
 }
 
-int Items::GetAtlasIndex(int itemID){
-    int offset = 0;
-    for(int i = 0; i < loadedAtlases.size(); i++){
-        int cols = static_cast<int>(atlasWH[i].x / 32);
-        int rows = static_cast<int>(atlasWH[i].y / 32);
-        int tileCount = cols * rows;
-        if(itemID >= offset && itemID < offset + tileCount){
-            return i;
-        }
-        offset += tileCount;
+int Items::GetAtlasIndex(int itemID) {
+  int offset = 0;
+  for (int i = 0; i < loadedAtlases.size(); i++) {
+    int cols = static_cast<int>(atlasWH[i].x / 32);
+    int rows = static_cast<int>(atlasWH[i].y / 32);
+    int tileCount = cols * rows;
+    if (itemID >= offset && itemID < offset + tileCount) {
+      return i;
     }
-    return -1;
+    offset += tileCount;
+  }
+  return -1;
 }
 
-void Items::AddItem(Player &player, int itemID, std::string itemName){
-    if (itemID < 0) {
-        std::cerr << "Error: Invalid item ID passed to AddItem (" << itemID << ")" << std::endl;
-        return;
+void Items::AddItem(Player &player, int itemID, std::string itemName) {
+  if (itemID < 0) {
+    std::cerr << "Error: Invalid item ID passed to AddItem (" << itemID << ")"
+              << std::endl;
+    return;
+  }
+  for (auto &item : player.slots) {
+    if (item.itemID == itemID && item.itemID != -1) {
+      item.count += 1;
+      std::cout << "You added a " << itemName << " to your inventory!"
+                << std::endl;
+      return;
     }
-    for(auto& item : player.slots){
-        if(item.itemID == itemID && item.itemID != -1){
-            item.count += 1;
-            std::cout << "You added a " << itemName << " to your inventory!" << std::endl;
-            return;
-        }
+  }
+  for (int i = 0; i < 5; i++) {
+    auto &item = player.slots[i];
+    if (item.itemID == -1) {
+      item.itemID = itemID;
+      item.itemName = itemName;
+      item.atlasIndex = Items::GetAtlasIndex(itemID);
+      item.atlasID = Items::loadedAtlases[item.atlasIndex]->ID;
+      item.uOffset = Items::CalculateUV(itemID, item.atlasIndex).x;
+      item.vOffset = Items::CalculateUV(itemID, item.atlasIndex).y;
+      item.uv0 =
+          ImVec2(item.uOffset,
+                 item.vOffset + 32.0f / Items::atlasWH[item.atlasIndex].y);
+      item.uv1 =
+          ImVec2(item.uOffset + 32.0f / Items::atlasWH[item.atlasIndex].x,
+                 item.vOffset);
+      item.count = 1;
+      std::cout << "You added a " << itemName << " to your inventory!"
+                << std::endl;
+      return;
     }
-    for(int i = 0; i < 5; i++){
-        auto& item = player.slots[i];
-        if(item.itemID == -1){
-            item.itemID = itemID;
-            item.itemName = itemName;
-            item.atlasIndex = Items::GetAtlasIndex(itemID);
-            item.atlasID = Items::loadedAtlases[item.atlasIndex]->ID;
-            item.uOffset = Items::CalculateUV(itemID, item.atlasIndex).x;
-            item.vOffset = Items::CalculateUV(itemID, item.atlasIndex).y;
-            item.uv0 = ImVec2(item.uOffset, item.vOffset + 32.0f / Items::atlasWH[item.atlasIndex].y);
-            item.uv1 = ImVec2(item.uOffset + 32.0f / Items::atlasWH[item.atlasIndex].x, item.vOffset);
-            item.count = 1;
-            std::cout << "You added a " << itemName << " to your inventory!" << std::endl;
-            return;
-        } 
-    }
-    std::cout << "Inventory is full!" << std::endl;
-    return;   
+  }
+  std::cout << "Inventory is full!" << std::endl;
+  return;
 }
