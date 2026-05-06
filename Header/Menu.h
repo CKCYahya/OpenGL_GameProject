@@ -2,10 +2,12 @@
 #define MENU_H
 
 #include "EBO.h"
+#include "GameMap.h"
 #include "Shader.h"
 #include "Texture.h"
 #include "VAO.h"
 #include "VBO.h"
+#include "Vendor.h"
 #include "Window.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -20,7 +22,18 @@ class Player;
 class Camera;
 class Items;
 
-enum class MenuState { MAIN_MENU, START, SETTINGS, PAUSE, SAVE, LOAD, EXIT };
+enum class MenuState {
+  MAIN_MENU,
+  START,
+  SETTINGS,
+  PAUSE,
+  SAVE,
+  LOAD,
+  EXIT,
+  UPGRADE,
+  SELL,
+  VENDOR,
+};
 
 class Menu {
 public:
@@ -29,12 +42,14 @@ public:
   MenuState state;
   MenuState previousState;
   bool isGameStarted;
+
   std::unique_ptr<Texture> menuTexture;
   std::unique_ptr<VAO> vao;
   std::unique_ptr<VBO> vbo;
   std::unique_ptr<EBO> ebo;
   int saveSlotCount;
   bool showSaveConfirm = false;
+  bool locked = false;
   Menu(Window *window, Shader *shader);
   ~Menu();
   void LoadAssets(Shader *shader);
@@ -49,6 +64,8 @@ public:
   void GetSaveNames();
   void newSaveSection(Player *player, Camera *camera,
                       std::map<int, std::unique_ptr<Items>> *itemList);
+  void vendorMenu(Items &item, Player &player, GameMap &gameMap);
+  void moneyDisplay(Player &player);
 };
 
 #endif

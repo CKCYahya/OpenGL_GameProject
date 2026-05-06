@@ -1,5 +1,6 @@
 #include "Camera.h"
 #include "Fishing.h"
+#include "GLFW/glfw3.h"
 #include "GameMap.h"
 #include "InteractionUI.h"
 #include "Items.h"
@@ -135,7 +136,8 @@ int main() {
         // Update Player
         player.Update(window.getGLFWWindow(), deltaTime, gameMap);
 
-        if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS &&
+            menu.locked == false) {
           state = 5;
         } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) ==
                        GLFW_RELEASE &&
@@ -237,7 +239,17 @@ int main() {
                       gameMap.worldWidth / 2.0f, gameMap.worldHeight / 2.0f));
 
         // --- RENDER ---
-
+        if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_E) == GLFW_PRESS &&
+            player.checkInteractionZone(gameMap)) {
+          state = 6;
+        } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_E) ==
+                       GLFW_RELEASE &&
+                   state == 6) {
+          menu.state = MenuState::VENDOR;
+          menu.locked = true;
+          state = 0;
+        }
+        menu.moneyDisplay(player);
         // Activate Map Shader and Update Matrix for Layer 1
         mapShader.Activate();
         camera.updateMatrix(-100.0f, 100.0f, mapShader, "camMatrix");

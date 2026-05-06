@@ -42,10 +42,11 @@ public:
   std::unique_ptr<Texture> atlasTexture;
   std::unique_ptr<Texture> atlasTexture2;
 
-  std::vector<MapTile> mapCache;    // Visual Layer
-  std::vector<MapTile> layer2Cache; // Visual Layer
-  std::vector<bool> collisionCache; // Collision Layer (true = blocked)
-  std::vector<int> waterCache;      // Water Layer (true = water)
+  std::vector<MapTile> mapCache;     // Visual Layer
+  std::vector<MapTile> layer2Cache;  // Visual Layer
+  std::vector<bool> collisionCache;  // Collision Layer (true = blocked)
+  std::vector<int> waterCache;       // Water Layer (true = water)
+  std::vector<int> interactionCache; // Interaction Layer (true = water)
   GLuint minimapTexID;
 
   std::unique_ptr<VAO> mapVAO;
@@ -57,7 +58,6 @@ public:
   std::unique_ptr<VBO> instanceVBO2; // Layer 2 VBO
   std::vector<InstanceData> instanceDataArray;
   std::vector<InstanceData> layer2DataArray; // Layer 2 verileri
-
 
   std::unique_ptr<NewMap> newMap;
 
@@ -71,10 +71,11 @@ public:
   void DrawMinimap(glm::vec3 playerPos, Camera &camera, int winWidth,
                    int winHeight);
 
-
   // Helper to check collision
   bool checkCollision(float x, float y);
   int checkWater(float x, float y);
+  int checkInteraction(float x, float y);
+  int abstractLayerTileIndex(float x, float y);
 
 private:
   GLuint GenerateMinimapTexture();

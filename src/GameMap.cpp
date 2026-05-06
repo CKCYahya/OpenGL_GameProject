@@ -25,8 +25,10 @@ GameMap::GameMap(const char *mapFile) {
   const auto &colData = newMap->getCollisionIDs();
   collisionCache.resize(colData.size());
   waterCache.resize(colData.size());
+  interactionCache.resize(colData.size());
   for (size_t i = 0; i < colData.size(); ++i) {
     // If GID > 0, it's a collision tile
+    interactionCache[i] = (colData[i] == 2472);
     collisionCache[i] = (colData[i] == 2000);
     if (colData[i] == 2014 || colData[i] == 2015 || colData[i] == 2016) {
       waterCache[i] = colData[i];
@@ -437,7 +439,25 @@ bool GameMap::checkCollision(float x, float y) {
   return false;
 }
 
+int GameMap::checkInteraction(float x, float y) {
+  int index = abstractLayerTileIndex(x, y);
+
+  if (index >= 0 && index < interactionCache.size()) {
+    return interactionCache[index];
+  }
+  return 0;
+}
+
 int GameMap::checkWater(float x, float y) {
+  int index = abstractLayerTileIndex(x, y);
+
+  if (index >= 0 && index < waterCache.size()) {
+    return waterCache[index];
+  }
+  return 0;
+}
+
+int GameMap::abstractLayerTileIndex(float x, float y) {
   float localX = x + worldWidth / 2.0f;
   float localY = y + worldHeight / 2.0f;
 
@@ -452,8 +472,5 @@ int GameMap::checkWater(float x, float y) {
   int tiledRow = MAP_HEIGHT_TILES - 1 - tileY;
   int index = tiledRow * MAP_WIDTH_TILES + tileX;
 
-  if (index >= 0 && index < waterCache.size()) {
-    return waterCache[index];
-  }
-  return 0;
+  return index;
 }

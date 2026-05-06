@@ -31,6 +31,7 @@ class Animations;
 struct InventorySlot {
   int itemID = -1;
   std::string itemName = "UNKNOWN";
+  int itemValue = 0;
   GLuint atlasID = 0;
   int atlasIndex = -1;
   float uOffset = 0.0f;
@@ -64,6 +65,8 @@ public:
   glm::vec3 rayDirection;
   glm::vec3 newRayStart;
   glm::vec3 newRayEnd;
+
+  int money;
   // Graphics
   std::map<std::string, std::vector<std::unique_ptr<Texture>>> textures;
 
@@ -85,6 +88,7 @@ public:
   void FromJson(nlohmann::json j);
   void drawItem(Shader &shader);
   void getAnimation(std::string animType, int direction);
+  bool checkInteractionZone(GameMap &gameMap);
 };
 
 // Texture paths ordered by direction: 0=Down, 1=Up, 2=Left, 3=Right

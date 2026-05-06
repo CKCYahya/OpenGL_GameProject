@@ -354,3 +354,54 @@ void Menu::newSaveSection(Player *player, Camera *camera,
   ImGui::PopStyleVar(3);
   ImGui::PopStyleColor(5);
 }
+
+void Menu::vendorMenu(Items &item, Player &player, GameMap &gameMap) {
+  ImGui::Begin("Vendor");
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 3.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 15.0f));
+  ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.55f, 0.36f, 0.20f, 1.0f));
+  ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
+                        ImVec4(0.65f, 0.46f, 0.30f, 1.0f));
+  ImGui::PushStyleColor(ImGuiCol_ButtonActive,
+                        ImVec4(0.40f, 0.24f, 0.12f, 1.0f));
+  ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.94f, 0.83f, 1.0f));
+  ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.25f, 0.14f, 0.05f, 1.0f));
+  ImGui::Text("Vendor Menu");
+  ImGui::Spacing();
+  if (ImGui::Button("Sell Fishes")) {
+    state = MenuState::SELL;
+    Vendor::Sell(player);
+  }
+  if (ImGui::Button("Upgrade")) {
+    state = MenuState::UPGRADE;
+    Vendor::Upgrade(item, player);
+  }
+
+  ImGui::Spacing();
+  if (ImGui::Button("Back")) {
+    state = MenuState::START;
+    locked = false;
+  }
+  ImGui::PopStyleVar(3);
+  ImGui::PopStyleColor(5);
+  ImGui::End();
+}
+
+void Menu::moneyDisplay(Player &player) {
+  ImGui::SetNextWindowBgAlpha(0.35f);
+
+  ImGuiWindowFlags window_flags =
+      ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+      ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing |
+      ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove;
+
+  if (ImGui::Begin("MoneyHUD", NULL, window_flags)) {
+    ImGui::TextColored(ImVec4(1.0f, 0.84f, 0.0f, 1.0f), "Cuzdan:");
+    ImGui::SameLine();
+
+    ImGui::Text("%d Altin", player.money);
+
+    ImGui::End();
+  }
+}
