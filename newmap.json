@@ -1,4 +1,12 @@
 { "compressionlevel":-1,
+ "editorsettings":
+    {
+     "export":
+        {
+         "format":"json",
+         "target":"..\/newmap.json"
+        }
+    },
  "height":40,
  "infinite":false,
  "layers":[
@@ -248,7 +256,7 @@
         {
          "columns":53,
          "firstgid":1,
-         "image":"Yahya\/Projects\/texture.png",
+         "image":"..\/Yahya\/Projects\/texture.png",
          "imageheight":1184,
          "imagewidth":1696,
          "margin":0,
@@ -654,7 +662,7 @@
         {
          "columns":37,
          "firstgid":1962,
-         "image":"Yahya\/Projects\/renkler.png",
+         "image":"..\/Yahya\/Projects\/renkler.png",
          "imageheight":827,
          "imagewidth":1188,
          "margin":0,
@@ -713,7 +721,7 @@
         {
          "columns":16,
          "firstgid":2887,
-         "image":"..\/Downloads\/spritesheet_32x32.png",
+         "image":"..\/..\/Downloads\/spritesheet_32x32.png",
          "imageheight":512,
          "imagewidth":512,
          "margin":0,
@@ -831,7 +839,7 @@
         {
          "columns":1,
          "firstgid":3143,
-         "image":"Yahya\/Projects\/VS Code\/image\/fishing rod.png",
+         "image":"..\/Yahya\/Projects\/VS Code\/image\/fishing rod.png",
          "imageheight":32,
          "imagewidth":32,
          "margin":0,
@@ -847,18 +855,23 @@
                          "name":"item",
                          "type":"string",
                          "value":"olta"
+                        }, 
+                        {
+                         "name":"value",
+                         "type":"int",
+                         "value":0
                         }]
                 }],
          "tilewidth":32
         }, 
         {
          "firstgid":3144,
-         "source":"Yahya\/Projects\/fishing rod.tsx"
+         "source":"..\/Yahya\/Projects\/fishing rod.tsx"
         }, 
         {
          "columns":16,
          "firstgid":3145,
-         "image":"OpenGL_GameProject\/image\/decorations-medieval.png",
+         "image":"image\/decorations-medieval.png",
          "imageheight":2048,
          "imagewidth":512,
          "margin":0,

@@ -1,0 +1,18 @@
+CmakeLists.txt
+dynamic link ve static link aralarındaki farklar araştırıldı ve özet olarak:
+dynamic link
+- program çalışırken link edilir
+- derleme zamanında kütüphaneye ihtiyaç duymaz
+- daha az yer kaplar
+Ör: .dll, .so, .dylib
+static link
+- derleme zamanında link edilir
+- derleme zamanında kütüphaneye ihtiyaç duyar
+- daha fazla yer kaplar
+Ör: .lib, .a
+--Bunlara bağlı olarak projenin dinamik link yapılması için cmake güncellendi.
+--İmgui kütüphanesinin glfw entegrasyonu için target_link_libraries komutu ile eklendi.
+
+Items.cpp
+--Yeni vendor özelliği için itemlerin değerlerini tutan value değişkenini propValueInt değişkenine atarken oltanın değeri 0 olduğu için render edilmiyordu.
+--Bunu önlemek için if kontrolü eklendi.

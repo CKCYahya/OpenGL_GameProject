@@ -11,6 +11,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(GLFW_BUILD_DOCS OFF)
 option(GLFW_BUILD_EXAMPLES OFF)
 option(GLFW_BUILD_TESTS OFF)
+set(BUILD_SHARED_LIBS  ON CACHE BOOL "" FORCE)
+set(GLFW_LIBRARY_TYPE "SHARED" CACHE STRING "" FORCE)
 add_subdirectory(libs/glfw)
 
 # OpenGL Kütüphanesini Sistemde Bul
@@ -42,6 +44,10 @@ target_include_directories(imgui PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/glfw/include
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/glad/include
 )
+
+target_link_libraries(imgui PRIVATE glfw)
+
+target_compile_definitions(imgui PUBLIC GLFW_DLL)
 target_compile_definitions(imgui PRIVATE GLFW_INCLUDE_NONE)
 
 # Ana Oyun Uygulaması (Tüm kaynak kodlar ve glad.c)
@@ -83,15 +89,15 @@ target_include_directories(GameProject PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/imgui/backends
 )
 
-target_compile_definitions(GameProject PRIVATE GLFW_INCLUDE_NONE)
+target_compile_definitions(GameProject PRIVATE GLFW_DLL GLFW_INCLUDE_NONE)
 
 # Kütüphaneleri Ana Uygulamaya Bağla
 target_link_libraries(GameProject PRIVATE
+    imgui
     glfw
     OpenGL::GL
     glm
     stb_image
-    imgui
     ${CMAKE_DL_LIBS} 
 )
 
@@ -108,4 +114,6 @@ add_custom_command(TARGET GameProject POST_BUILD
         ${CMAKE_SOURCE_DIR}/shaders $<TARGET_FILE_DIR:GameProject>/shaders
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${CMAKE_SOURCE_DIR}/newmap.json $<TARGET_FILE_DIR:GameProject>/newmap.json
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:glfw> $<TARGET_FILE_DIR:GameProject>
 )

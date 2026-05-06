@@ -97,33 +97,36 @@ Items::readJsonItems(const char *jsonItems) {
               for (const auto &item : itemset["tiles"]) {
                 int localID = item.value("id", -1);
                 int globalID = firstGid + localID;
+                std::string propValueStr = "";
+                int propValueInt = 0;
                 for (const auto &prop : item["properties"]) {
                   std::string propName = prop.value("name", "");
-                  std::string propValueStr;
-                  int propValueInt;
+
                   if (propName == "item") {
                     propValueStr = prop.value("value", "");
                   } else if (propName == "value") {
                     propValueInt = prop.value("value", 0);
                   }
-                  if (propName == "item") {
+                  if (!propValueStr.empty()) {
                     // Balıkları spawnlama, sadece balık tutmayla elde
                     // edilsinler
                     if (propValueStr == "palamut" || propValueStr == "levrek" ||
                         propValueStr == "istavrit" ||
-                        propValueStr == "uskumru" || propValueStr == "lufer") {
+                        propValueStr == "uskumru" || propValueStr == "lufer" ||
+                        propValueInt != 0) {
                       continue;
+                    } else {
+                      auto newItem = std::make_unique<Items>(
+                          propValueStr, glm::vec3(0.0f, 0.0f, 0.0f), localID);
+                      newItem->atlasIndex = i;
+                      newItem->value = propValueInt;
+                      int rastgeleSayi = min + (std::rand() % (max - min + 1));
+                      newItem->position =
+                          glm::vec3(rastgeleSayi, rastgeleSayi, 0.0f);
+                      std::cout << newItem->position.x << " "
+                                << newItem->position.y << std::endl;
+                      itemType[globalID] = std::move(newItem);
                     }
-                    auto newItem = std::make_unique<Items>(
-                        propValueStr, glm::vec3(0.0f, 0.0f, 0.0f), localID);
-                    newItem->atlasIndex = i;
-                    newItem->value = propValueInt;
-                    int rastgeleSayi = min + (std::rand() % (max - min + 1));
-                    newItem->position =
-                        glm::vec3(rastgeleSayi, rastgeleSayi, 0.0f);
-                    std::cout << newItem->position.x << " "
-                              << newItem->position.y << std::endl;
-                    itemType[globalID] = std::move(newItem);
                   }
                 }
               }
