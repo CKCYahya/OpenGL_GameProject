@@ -6,6 +6,7 @@
 #include "Menu.h"
 #include "Panel.h"
 #include "Player.h"
+#include "Npc.h"
 #include "Shader.h"
 #include "Texture.h"
 #include "Window.h"
@@ -58,6 +59,13 @@ int main() {
                 300.0f); // Speed=300
 
   player.LoadAssets(textureShader);
+
+  // --- NPC ---
+  Npc npc;
+  npc.LoadAssets(textureShader);
+  npc.PickRandomTarget(gameMap);
+  npc.position = npc.targetPosition; // Spawn at random position
+
   // Start camera at (0,0)
   Camera camera(width, height, glm::vec3(0.0f, 0.0f, 0.0f));
 
@@ -121,7 +129,7 @@ int main() {
       ImGui_ImplGlfw_NewFrame();
       ImGui::NewFrame();
       if (menu.state != MenuState::START) {
-        menu.Draw(&window, &textureShader, &player, &camera, &itemList);
+        menu.Draw(&window, &textureShader, &player, &camera, &itemList, &npc);
       } else {
         textureShader.Activate();
 
@@ -132,8 +140,9 @@ int main() {
         camera.height = winHeight;
         glViewport(0, 0, winWidth, winHeight);
 
-        // Update Player
+        // Update Player and NPC
         player.Update(window.getGLFWWindow(), deltaTime, gameMap);
+        npc.Update(deltaTime, gameMap);
 
         if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
           state = 5;
@@ -245,24 +254,14 @@ int main() {
         // Draw Map
         gameMap.Draw(mapShader, camera);
 
-        // Activate Texture Shader and Update Matrix for entities
-        textureShader.Activate();
-        camera.updateMatrix(-100.0f, 100.0f, textureShader, "camMatrix");
-        if (!itemList.empty()) {
-          itemList.begin()->second->drawAtlas(textureShader, itemList, winWidth,
-                                              winHeight, camera);
-        }
 
-        // Draw Player
-        player.Draw(textureShader);
-
-        // Draw Items
         // Activate Texture Shader and Update Matrix for entities
         textureShader.Activate();
         camera.updateMatrix(-100.0f, 100.0f, textureShader, "camMatrix");
 
-        // Draw Player
+        // Draw Player and NPC
         player.Draw(textureShader);
+        npc.Draw(textureShader, camera);
 
         // Draw Items
 

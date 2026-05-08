@@ -19,6 +19,7 @@
 class Player;
 class Camera;
 class Items;
+class Npc;
 
 enum class MenuState { MAIN_MENU, START, SETTINGS, PAUSE, SAVE, LOAD, EXIT };
 
@@ -39,16 +40,16 @@ public:
   ~Menu();
   void LoadAssets(Shader *shader);
   void Draw(Window *window, Shader *shader, Player *player, Camera *camera,
-            std::map<int, std::unique_ptr<Items>> *itemList);
+            std::map<int, std::unique_ptr<Items>> *itemList, Npc *npc);
   void SaveGame(Player *player, Camera *camera,
-                std::map<int, std::unique_ptr<Items>> *itemList,
+                std::map<int, std::unique_ptr<Items>> *itemList, Npc *npc,
                 std::string filename);
   void LoadGame(Player *player, Camera *camera,
-                std::map<int, std::unique_ptr<Items>> *itemList,
+                std::map<int, std::unique_ptr<Items>> *itemList, Npc *npc,
                 std::string filename);
   void GetSaveNames();
   void newSaveSection(Player *player, Camera *camera,
-                      std::map<int, std::unique_ptr<Items>> *itemList);
+                      std::map<int, std::unique_ptr<Items>> *itemList, Npc *npc);
 };
 
 #endif
