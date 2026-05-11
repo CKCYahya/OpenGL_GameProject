@@ -4,6 +4,7 @@
 #include "GameMap.h"
 #include "Items.h"
 #include "Player.h"
+#include "Vendor.h"
 #include <map>
 #include <memory>
 #include <unordered_map>
@@ -30,8 +31,8 @@ public:
   void Catch(Player &player, std::map<int, std::unique_ptr<Items>> &itemList,
              GameMap &gameMap);
   void Update(GLFWwindow *window, float dt, Player &player,
-              std::map<int, std::unique_ptr<Items>> &itemList,
-              GameMap &gameMap);
+              std::map<int, std::unique_ptr<Items>> &itemList, GameMap &gameMap,
+              Vendor &vendor);
   bool isMoving(Player &player);
   bool hasReleasedKey = true;
 };

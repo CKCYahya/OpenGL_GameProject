@@ -7,6 +7,7 @@
 #include "Texture.h"
 #include "VAO.h"
 #include "VBO.h"
+#include "Vendor.h"
 #include "Window.h"
 #include <cstdlib>
 #include <iostream>
@@ -217,6 +218,7 @@ nlohmann::json Items::ToJson(std::map<int, std::unique_ptr<Items>> &itemList) {
     nlohmann::json itemJson;
     itemJson["ID"] = item.second->ID;
     itemJson["name"] = item.second->name;
+    itemJson["value"] = item.second->value;
     itemJson["atlasIndex"] = item.second->atlasIndex;
     itemJson["position"]["x"] = item.second->position.x;
     itemJson["position"]["y"] = item.second->position.y;
@@ -239,6 +241,7 @@ void Items::FromJson(std::map<int, std::unique_ptr<Items>> &itemList,
     auto newItem = std::make_unique<Items>(
         item["name"], glm::vec3(0.0f, 0.0f, 0.0f), item["ID"]);
     newItem->ID = item["ID"];
+    newItem->value = item["value"];
     newItem->atlasIndex = item["atlasIndex"];
     newItem->position.x = item["position"]["x"];
     newItem->position.y = item["position"]["y"];
@@ -311,4 +314,21 @@ void Items::AddItem(Player &player, int itemID, std::string itemName) {
   }
   std::cout << "Inventory is full!" << std::endl;
   return;
+}
+
+void Items::UpdateItemValue(Player &player,
+                            std::map<int, std::unique_ptr<Items>> &worldItems,
+                            Vendor &vendor) {
+  for (auto &item : worldItems) {
+    if (vendor.tradeLevel != UpgradeLevel::MAX &&
+        item.second->name != "UNKNOWN" && item.second->value != 0) {
+      item.second->value = item.second->value + 50;
+    }
+  }
+  for (auto &item : player.slots) {
+    if (vendor.tradeLevel != UpgradeLevel::MAX && item.itemName != "UNKNOWN" &&
+        item.itemValue != 0) {
+      item.itemValue = item.itemValue + 50;
+    }
+  }
 }

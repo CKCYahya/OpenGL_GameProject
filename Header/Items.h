@@ -21,6 +21,7 @@ class Window;
 class VAO;
 class VBO;
 class EBO;
+class Vendor;
 
 class Items {
 public:
@@ -60,6 +61,9 @@ public:
   static glm::vec2 CalculateUV(int itemID, int atlasIndex);
   static int GetAtlasIndex(int itemID);
   static void AddItem(Player &player, int itemID, std::string itemName);
+  static void UpdateItemValue(Player &player,
+                              std::map<int, std::unique_ptr<Items>> &worldItems,
+                              Vendor &vendor);
 };
 
 extern std::vector<std::string> images;

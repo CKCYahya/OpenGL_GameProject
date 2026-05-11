@@ -42,27 +42,28 @@ public:
   bool isGameStarted;
 
   std::unique_ptr<Texture> menuTexture;
+  std::unique_ptr<Texture> purseTexture;
   std::unique_ptr<VAO> vao;
   std::unique_ptr<VBO> vbo;
   std::unique_ptr<EBO> ebo;
   int saveSlotCount;
   bool showSaveConfirm = false;
-  bool locked = false;
   Menu(Window *window, Shader *shader);
   ~Menu();
   void LoadAssets(Shader *shader);
   void Draw(Window *window, Shader *shader, Player *player, Camera *camera,
-            std::map<int, std::unique_ptr<Items>> *itemList);
+            std::map<int, std::unique_ptr<Items>> *itemList, Vendor &vendor);
   void SaveGame(Player *player, Camera *camera,
-                std::map<int, std::unique_ptr<Items>> *itemList,
+                std::map<int, std::unique_ptr<Items>> *itemList, Vendor &vendor,
                 std::string filename);
   void LoadGame(Player *player, Camera *camera,
-                std::map<int, std::unique_ptr<Items>> *itemList,
+                std::map<int, std::unique_ptr<Items>> *itemList, Vendor &vendor,
                 std::string filename);
   void GetSaveNames();
   void newSaveSection(Player *player, Camera *camera,
-                      std::map<int, std::unique_ptr<Items>> *itemList);
-  void vendorMenu(Player &player);
+                      std::map<int, std::unique_ptr<Items>> *itemList,
+                      Vendor &vendor);
+  void vendorMenu(Player &player, float currentWidth, float currentHeight);
   void moneyDisplay(Player &player);
 };
 

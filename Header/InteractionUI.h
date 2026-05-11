@@ -3,11 +3,11 @@
 
 #include "Camera.h"
 #include "Fishing.h"
+#include "Menu.h"
 #include "Player.h"
 #include "Shader.h"
 #include "Window.h"
 #include <imgui.h> // ImGui tipleri (ImVec2 vb.) için gerekli
-#include <map>
 
 // Forward Declarations (Header'ı hafifletir ve çakışmaları önler)
 
@@ -23,7 +23,8 @@ public:
   ~InteractionUI();
   PopupState state;
 
-  void showInteractionUI(Fishing &fishing, Player &player, bool nearItem);
+  void showInteractionUI(Fishing &fishing, Player &player, bool &nearVendor,
+                         bool nearItem);
   void Draw(Camera *camera, Player *player, Window *window);
 };
 

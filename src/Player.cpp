@@ -356,7 +356,7 @@ void Player::Reset() {
   Position = glm::vec3(0.0f, 0.0f, 0.0f);
   direction = 0;
   selectedSlot = 0;
-  speed = 300.0f;
+  speed = 150.0f;
   money = 0;
   state = State::IDLE;
   for (int i = 0; i < slotAmount; ++i) {
@@ -395,7 +395,7 @@ void Player::FromJson(nlohmann::json j) {
 bool Player::checkInteractionZone(GameMap &gameMap) {
   int interactionType = -1;
   interactionType = gameMap.checkInteraction((int)Position.x, (int)Position.y);
-  if (interactionType == 2472) {
+  if (interactionType == 1) {
     return true;
   }
   return false;

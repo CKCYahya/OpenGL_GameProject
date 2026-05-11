@@ -1,6 +1,7 @@
 // InteractionUI.cpp
 #include "InteractionUI.h"
 #include "Camera.h"
+#include "Menu.h"
 #include "Player.h"
 #include "Window.h"
 #include "glm/glm.hpp"
@@ -14,10 +15,10 @@ InteractionUI::InteractionUI() {
 InteractionUI::~InteractionUI() {}
 
 void InteractionUI::showInteractionUI(Fishing &fishing, Player &player,
-                                      bool nearItem) {
+                                      bool &nearVendor, bool nearItem) {
   if (nearItem || player.state == State::FULL_INVENTORY ||
       fishing.currentState == States::AVAILABLE ||
-      fishing.currentState == States::CAUGHT) {
+      fishing.currentState == States::CAUGHT || nearVendor) {
 
     if (state == PopupState::HIDE) {
       lastTime = glfwGetTime();
@@ -31,6 +32,8 @@ void InteractionUI::showInteractionUI(Fishing &fishing, Player &player,
       strcpy_s(message, "F: Catch the fish");
     } else if (nearItem) {
       strcpy_s(message, "E: Pick up");
+    } else if (nearVendor) {
+      strcpy_s(message, "E: Trade");
     }
     state = PopupState::SHOW;
   } else {

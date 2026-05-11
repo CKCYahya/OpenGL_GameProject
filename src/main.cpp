@@ -56,7 +56,7 @@ int main() {
   // --- PLAYER ---
   // Use map tile size for player size
   Player player(glm::vec3(0.0f, 0.0f, 0.0f), gameMap.tileSize,
-                300.0f); // Speed=300
+                150.0f); // Speed=150
 
   player.LoadAssets(textureShader);
   // Start camera at (0,0)
@@ -102,6 +102,7 @@ int main() {
   Panel panel;
   Fishing fishingSys;
   InteractionUI interactionUI;
+  Vendor vendor;
   glfwSwapInterval(1);
   Menu menu(&window, &textureShader);
   menu.LoadAssets(&textureShader);
@@ -121,8 +122,18 @@ int main() {
       ImGui_ImplOpenGL3_NewFrame();
       ImGui_ImplGlfw_NewFrame();
       ImGui::NewFrame();
-      if (menu.state != MenuState::START) {
-        menu.Draw(&window, &textureShader, &player, &camera, &itemList);
+      if (menu.state != MenuState::START && menu.state != MenuState::VENDOR) {
+        menu.Draw(&window, &textureShader, &player, &camera, &itemList, vendor);
+        if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS &&
+            menu.state == MenuState::PAUSE) {
+          state = 7;
+        } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) ==
+                       GLFW_RELEASE &&
+                   state == 7) {
+          menu.state = MenuState::START;
+          menu.isGameStarted = true;
+          state = 0;
+        }
       } else {
         textureShader.Activate();
 
@@ -133,11 +144,8 @@ int main() {
         camera.height = winHeight;
         glViewport(0, 0, winWidth, winHeight);
 
-        // Update Player
-        player.Update(window.getGLFWWindow(), deltaTime, gameMap);
-
         if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS &&
-            menu.locked == false) {
+            menu.isGameStarted == true) {
           state = 5;
         } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) ==
                        GLFW_RELEASE &&
@@ -154,7 +162,9 @@ int main() {
             }
           }
         }
-        interactionUI.showInteractionUI(fishingSys, player, nearItem);
+        bool nearVendor = player.checkInteractionZone(gameMap);
+        interactionUI.showInteractionUI(fishingSys, player, nearVendor,
+                                        nearItem);
 
         // Toggle Camera Mode ("C" key)
         if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_C) == GLFW_PRESS) {
@@ -227,16 +237,20 @@ int main() {
           player.dropItem(player.selectedSlot, itemList);
         }
 
-        if (player.slots[player.selectedSlot].itemID == 0) {
-          fishingSys.Update(window.getGLFWWindow(), deltaTime, player, itemList,
-                            gameMap);
-        }
+        if (menu.state != MenuState::VENDOR) {
+          if (player.slots[player.selectedSlot].itemID == 0) {
+            fishingSys.Update(window.getGLFWWindow(), deltaTime, player,
+                              itemList, gameMap, vendor);
+          }
 
-        // Update Camera
-        camera.Inputs(
-            window.getGLFWWindow(), (float)deltaTime, player.Position,
-            glm::vec4(-gameMap.worldWidth / 2.0f, -gameMap.worldHeight / 2.0f,
-                      gameMap.worldWidth / 2.0f, gameMap.worldHeight / 2.0f));
+          // Update Player
+          player.Update(window.getGLFWWindow(), deltaTime, gameMap);
+          // Update Camera
+          camera.Inputs(
+              window.getGLFWWindow(), (float)deltaTime, player.Position,
+              glm::vec4(-gameMap.worldWidth / 2.0f, -gameMap.worldHeight / 2.0f,
+                        gameMap.worldWidth / 2.0f, gameMap.worldHeight / 2.0f));
+        }
 
         // --- RENDER ---
         if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_E) == GLFW_PRESS &&
@@ -246,8 +260,14 @@ int main() {
                        GLFW_RELEASE &&
                    state == 6) {
           menu.state = MenuState::VENDOR;
-          menu.locked = true;
           state = 0;
+        }
+        if (menu.state == MenuState::VENDOR) {
+          menu.vendorMenu(player, width, height);
+        }
+        if (Vendor::hasUpdated) {
+          Items::UpdateItemValue(player, itemList, vendor);
+          Vendor::hasUpdated = false;
         }
         menu.moneyDisplay(player);
         // Activate Map Shader and Update Matrix for Layer 1
