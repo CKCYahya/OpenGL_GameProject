@@ -64,8 +64,9 @@ int main() {
   // --- NPC ---
   Npc npc;
   npc.LoadAssets(textureShader);
+  npc.position = player.Position +
+                 glm::vec3(gameMap.tileSize, 0.0f, 0.0f); // Spawn near player
   npc.PickRandomTarget(gameMap);
-  npc.position = npc.targetPosition; // Spawn at random position
 
   // Start camera at (0,0)
   Camera camera(width, height, glm::vec3(0.0f, 0.0f, 0.0f));
@@ -157,16 +158,12 @@ int main() {
         npc.Update(deltaTime, gameMap);
 
         if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-          if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) ==
-                  GLFW_PRESS &&
-              menu.isGameStarted == true) {
-            state = 5;
-          } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) ==
-                         GLFW_RELEASE &&
-                     state == 5) {
-            menu.state = MenuState::PAUSE;
-            state = 0;
-          }
+          state = 5;
+        } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) ==
+                       GLFW_RELEASE &&
+                   state == 5) {
+          menu.state = MenuState::PAUSE;
+          state = 0;
         }
 
         bool nearItem = false;

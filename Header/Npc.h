@@ -3,17 +3,18 @@
 
 #include "Animations.h"
 #include "Camera.h"
+#include "EBO.h"
 #include "Shader.h"
 #include "Texture.h"
 #include "VAO.h"
 #include "VBO.h"
-#include "EBO.h"
-#include <memory>
+#include "nlohmann/json.hpp"
 #include <cstdlib>
 #include <map>
-#include <vector>
+#include <memory>
 #include <string>
-#include "nlohmann/json.hpp"
+#include <vector>
+
 
 class GameMap;
 
@@ -26,13 +27,13 @@ public:
   std::unique_ptr<VAO> vao;
   std::unique_ptr<VBO> vbo;
   std::unique_ptr<EBO> ebo;
-  
+
   std::map<std::string, std::vector<std::unique_ptr<Texture>>> textures;
   std::unique_ptr<Animations> anim;
   glm::vec3 position;
   glm::vec3 scale;
   glm::vec3 rotation;
-  
+
   NpcState state;
   int direction; // 0: Down, 1: Up, 2: Left, 3: Right
   float speed;
@@ -47,18 +48,19 @@ public:
   void getAnimation(std::string animType, int direction);
   nlohmann::json ToJson();
   void FromJson(nlohmann::json j);
+  void Reset();
 };
 
 // Default NPC texture paths (you can adjust these as needed)
 inline std::vector<std::string> npcWalkTexturePaths = {
-    "image/npc-walk-front.png", "image/npc-walk-back.png", "image/npc-walk-left.png",
-    "image/npc-walk-right.png"};
+    "image/npc-walk-front.png", "image/npc-walk-back.png",
+    "image/npc-walk-left.png", "image/npc-walk-right.png"};
 
 inline std::vector<std::string> npcIdleTexturePaths = {
-    "image/npc-down.png", "image/npc-up.png", "image/npc-left.png", "image/npc-right.png"};
+    "image/npc-down.png", "image/npc-up.png", "image/npc-left.png",
+    "image/npc-right.png"};
 
 inline std::map<std::string, std::vector<std::string>> npcTexturePaths = {
-    {"walk", npcWalkTexturePaths},
-    {"idle", npcIdleTexturePaths}};
+    {"walk", npcWalkTexturePaths}, {"idle", npcIdleTexturePaths}};
 
 #endif
