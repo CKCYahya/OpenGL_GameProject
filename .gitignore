@@ -11,3 +11,4 @@ include/nlohmann/
 # Derleme Klasörleri
 build/
 .vscode/
+.cache/
