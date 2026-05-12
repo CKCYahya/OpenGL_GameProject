@@ -1,0 +1,30 @@
+`Header/Npc.h`
+--NPC'nin yön bazlı animasyon setlerini (idle ve walk) tutabilmesi için `std::map<std::string, std::vector<std::unique_ptr<Texture>>> textures` yapısı eklendi.
+--JSON serileştirme işlemleri için `#include "nlohmann/json.hpp"` kütüphanesi dahil edilerek, `ToJson()` ve `FromJson(nlohmann::json j)` metodlarının deklarasyonları yapıldı.
+--NPC'ye ait texture'ları topluca yüklemek için `LoadAssets(Shader &shader)` fonksiyonu eklendi.
+--Animasyon frame'ini yön bilgisiyle eşleştirerek bind eden `getAnimation(std::string animType, int direction)` fonksiyonu eklendi.
+--NPC'nin yürüme ve bekleme durumlarına ait kullanılacak görsellerin path'lerini tutan `npcWalkTexturePaths` (npc-walk-front, back, left, right), `npcIdleTexturePaths` vektörleri ve bunları gruplayan `npcTexturePaths` global map'i tanımlandı.
+
+`src/Npc.cpp`
+--Constructor içerisinde NPC'nin hareket ettikten sonra bekleyeceği süreyi hesaplayan rastgele `idleDuration` formülü eklendi. Bu süre tam olarak 1 ile 2 saniye arasına ayarlandı.
+--Destructor içerisine `textures` map'i üzerinde dönerek yüklenmiş dokuları bellekten temizleyen (`Delete()`) döngü eklendi.
+--`LoadAssets` fonksiyonu oluşturuldu; bu fonksiyon `npcTexturePaths` map'i üzerinden dönerek NPC'nin ilgili görsellerini yükleyip shader'a bağlıyor.
+--`Draw` metodu içerisinde NPC'nin o anki `state` bilgisine göre (`NpcState::MOVING` veya `NpcState::IDLE`), anlık yöne (0: Aşağı, 1: Yukarı, 2: Sol, 3: Sağ) bağlı olarak `getAnimation` ile doğru texture'ın bind edilmesi sağlandı.
+--`Update` metodunda harita çarpışmaları için bağımsız eksen (Independent Axis Collision) sistemi yazıldı. Eğer NPC engele çarparak hareketsiz kalırsa (`position == oldPos` durumu), bir köşede takılı kalmaması için `state = NpcState::IDLE` moduna geçirilip bekleme süresi 1 saniyeye zorlanıyor; böylece kısa süre sonra kendine yeni bir rota çiziyor.
+--Save mekanizmasına veri aktarabilmek için `ToJson()` implementasyonu eklendi. NPC'nin `position`, `targetPosition`, `direction`, `state`, `idleTimer` ve `idleDuration` değişkenleri `.json` formatına dönüştürüldü. Aynı verileri geri yükleyebilmek için ise parse edilmiş json datasını alan `FromJson()` implementasyonu yazıldı.
+
+`Header/Menu.h`
+--Menü üzerinde save/load işlemi yapılırken NPC verisinin de serialize edilebilmesi için `Draw`, `SaveGame`, `LoadGame` ve `newSaveSection` metotlarının parametrelerine `Npc *npc` pointer'ı eklendi. 
+--Dosya başına ilgili class tanınması için forward declaration (`class Npc;`) eklendi.
+
+`src/Menu.cpp`
+--`SaveGame` metodu güncellendi: Oyun kaydedilirken `jsonfile["npc"] = npc->ToJson();` satırı ile NPC'nin tüm anlık değerleri mevcut save `.json` dosyasına yazıldı.
+--`LoadGame` metodu güncellendi: Save dosyası yüklenirken JSON içerisinde `"npc"` objesi bulunuyorsa, okunan veriler `npc->FromJson(jsonfile["npc"]);` üzerinden çalıştırılarak pozisyon ve hedef bilgileri NPC'ye aktarıldı.
+--`Draw` metodu içerisindeki buton aksiyonlarında ve save/load arayüzünde çağrılan `SaveGame`, `LoadGame`, `newSaveSection` fonksiyonlarına `npc` pointer'ı argüman olarak aktarıldı.
+
+`src/main.cpp`
+--Oyunun ana sistemine NPC'yi dahil etmek için `#include "Npc.h"` eklendi ve `Player` nesnesinden hemen sonra `Npc npc;` objesi yaratıldı.
+--Oyun başlarken `npc.LoadAssets(textureShader)` ile npc resim dokuları yüklendi ve `npc.PickRandomTarget(gameMap)` yardımıyla NPC'nin rastgele bir konuma (`npc.position = npc.targetPosition;`) yerleştirilmesi sağlandı.
+--Update döngüsü içinde `npc.Update(deltaTime, gameMap);` çağırısı eklenerek NPC'nin yapay zekasının (rastgele hareket, bekleme vs.) oyun döngüsü ile beraber işlemesi sağlandı.
+--Render aşamasında `npc.Draw(textureShader, camera);` eklenerek karakterin doğru animasyonlarla ekrana çizilmesi sağlandı.
+--Menü arayüzünün (Save/Load vb.) NPC'ye erişebilmesi için `menu.Draw` fonksiyonuna `&npc` adresi parametre olarak verildi.

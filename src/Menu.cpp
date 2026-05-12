@@ -1,6 +1,7 @@
 #include "Menu.h"
 #include "Camera.h"
 #include "Items.h"
+#include "Npc.h"
 #include "Player.h"
 #include "Texture.h"
 #include "imgui.h"
@@ -9,6 +10,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+
 
 using json = nlohmann::json;
 
@@ -46,7 +48,7 @@ void Menu::LoadAssets(Shader *shader) {
 }
 
 void Menu::Draw(Window *window, Shader *shader, Player *player, Camera *camera,
-                std::map<int, std::unique_ptr<Items>> *itemList,
+                std::map<int, std::unique_ptr<Items>> *itemList, Npc *npc,
                 Vendor *vendor) {
   shader->Activate();
   glUniform2f(glGetUniformLocation(shader->ID, "texScale"), 1.0f, 1.0f);
@@ -167,7 +169,7 @@ void Menu::Draw(Window *window, Shader *shader, Player *player, Camera *camera,
     ImGui::SetNextWindowPos(ImVec2(0, 0));
     ImGui::SetNextWindowSize(ImVec2((float)currentWidth, (float)currentHeight));
     if (showSaveConfirm) {
-      newSaveSection(player, camera, itemList, vendor);
+      newSaveSection(player, camera, itemList, npc, vendor);
     } else {
       ImGui::Begin("SaveLoad", nullptr, clearWindowFlags);
       ImGui::SetWindowFontScale(1.8f);
@@ -184,7 +186,7 @@ void Menu::Draw(Window *window, Shader *shader, Player *player, Camera *camera,
             if (saveNames[i] == "New Save") {
               showSaveConfirm = true;
             } else {
-              SaveGame(player, camera, itemList, vendor,
+              SaveGame(player, camera, itemList, npc, vendor,
                        std::string(saveNames[i]) + ".json");
               state = MenuState::PAUSE;
             }
@@ -194,7 +196,7 @@ void Menu::Draw(Window *window, Shader *shader, Player *player, Camera *camera,
               ImGui::Text("Empty Slot");
             } else {
               if (saveNames[i] != "New Save") {
-                LoadGame(player, camera, itemList, vendor,
+                LoadGame(player, camera, itemList, npc, vendor,
                          std::string(saveNames[i]) + ".json");
                 ImGui::Text("Loaded!");
                 state = MenuState::START;
@@ -274,7 +276,7 @@ void Menu::Draw(Window *window, Shader *shader, Player *player, Camera *camera,
 
 // SAVE GAME
 void Menu::SaveGame(Player *player, Camera *camera,
-                    std::map<int, std::unique_ptr<Items>> *itemList,
+                    std::map<int, std::unique_ptr<Items>> *itemList, Npc *npc,
                     Vendor *vendor, std::string filename) {
   json jsonfile;
   if (player == nullptr || camera == nullptr || itemList == nullptr) {
@@ -286,6 +288,9 @@ void Menu::SaveGame(Player *player, Camera *camera,
   jsonfile["camera"] = camera->ToJson();
   jsonfile["itemList"] = Items::ToJson(*itemList);
   jsonfile["vendor"] = vendor->ToJson();
+  if (npc != nullptr) {
+    jsonfile["npc"] = npc->ToJson();
+  }
   std::ofstream ofs("saves/" + filename);
   ofs << jsonfile.dump(4, ' ', true);
   ofs.close();
@@ -293,7 +298,7 @@ void Menu::SaveGame(Player *player, Camera *camera,
 
 // LOAD GAME
 void Menu::LoadGame(Player *player, Camera *camera,
-                    std::map<int, std::unique_ptr<Items>> *itemList,
+                    std::map<int, std::unique_ptr<Items>> *itemList, Npc *npc,
                     Vendor *vendor, std::string filename) {
   json jsonfile;
   std::ifstream ifs("saves/" + filename);
@@ -309,6 +314,9 @@ void Menu::LoadGame(Player *player, Camera *camera,
     camera->FromJson(jsonfile["camera"]);
     Items::FromJson(*itemList, jsonfile["itemList"]);
     vendor->FromJson(jsonfile["vendor"]);
+    if (npc != nullptr && jsonfile.contains("npc")) {
+      npc->FromJson(jsonfile["npc"]);
+    }
   } catch (json::parse_error &e) {
     std::cerr << "JSON Load Error: " << e.what() << std::endl;
   }
@@ -335,7 +343,7 @@ void Menu::GetSaveNames() {
 
 void Menu::newSaveSection(Player *player, Camera *camera,
                           std::map<int, std::unique_ptr<Items>> *itemList,
-                          Vendor *vendor) {
+                          Npc *npc, Vendor *vendor) {
   ImGui::Begin("Save Confirm");
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 3.0f);
@@ -353,7 +361,7 @@ void Menu::newSaveSection(Player *player, Camera *camera,
 
   if (ImGui::Button("Save")) {
     if (saveName[0] != '\0') {
-      SaveGame(player, camera, itemList, vendor,
+      SaveGame(player, camera, itemList, npc, vendor,
                std::string(saveName) + ".json");
       showSaveConfirm = false;
       state = MenuState::SAVE;
