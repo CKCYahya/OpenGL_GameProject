@@ -123,7 +123,8 @@ int main() {
       ImGui_ImplGlfw_NewFrame();
       ImGui::NewFrame();
       if (menu.state != MenuState::START && menu.state != MenuState::VENDOR) {
-        menu.Draw(&window, &textureShader, &player, &camera, &itemList, vendor);
+        menu.Draw(&window, &textureShader, &player, &camera, &itemList,
+                  &vendor);
         if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS &&
             menu.state == MenuState::PAUSE) {
           state = 7;

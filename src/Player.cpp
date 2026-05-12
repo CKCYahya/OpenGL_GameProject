@@ -13,7 +13,7 @@ Player::Player(glm::vec3 startPos, float size, float speed)
   walkAnim = new Animations(8, 0.1f, 4, 2);
   fishAnim = new Animations(8, 0.15f, 4, 2);
   selectedSlot = -1;
-  money = 0;
+  money = 10000;
   slotAmount = sizeof(this->slots) / sizeof(this->slots[0]);
   interactionRadius =
       size * 1.5f; // Interaction radius is 1.5 times player size
@@ -216,6 +216,7 @@ ImTextureID Player::Interact(Items &item) {
       this->slots[slotIndex].itemName = item.name;
       this->slots[slotIndex].atlasID = item.loadedAtlases[item.atlasIndex]->ID;
       this->slots[slotIndex].count += 1;
+      this->slots[slotIndex].itemValue = item.value;
       float atlasW = item.atlasWH[item.atlasIndex].x;
       float atlasH = item.atlasWH[item.atlasIndex].y;
       float uOff = item.uOffset;
@@ -324,7 +325,6 @@ void Player::getAnimation(std::string animType, int direction) {
 
 nlohmann::json Player::ToJson() {
   nlohmann::json j;
-
   j["position"]["x"] = Position.x;
   j["position"]["y"] = Position.y;
   j["position"]["z"] = Position.z;

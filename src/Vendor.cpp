@@ -16,7 +16,7 @@ void Vendor::Update(GLFWwindow *window, int direction, int currentFrame,
 void Vendor::Sell(Player &player) {
   std::cout << "Enter sell zone" << std::endl;
   for (auto &item : player.slots) {
-    if (item.count > 0) {
+    if (item.count > 0 && item.itemName != "olta") {
       player.money += (item.itemValue * item.count);
       item.count = 0;
       item.itemID = -1;
@@ -88,10 +88,12 @@ void Vendor::UpgradeBoots(Player &player) {
   }
 }
 
-void Vendor::ToJson(json &j) {
+json Vendor::ToJson() {
+  nlohmann::json j;
   j["tradeLevel"] = tradeLevel;
   j["fishingLevel"] = fishingLevel;
   j["bootLevel"] = bootLevel;
+  return j;
 }
 
 void Vendor::FromJson(json &j) {

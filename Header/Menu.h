@@ -52,17 +52,17 @@ public:
   ~Menu();
   void LoadAssets(Shader *shader);
   void Draw(Window *window, Shader *shader, Player *player, Camera *camera,
-            std::map<int, std::unique_ptr<Items>> *itemList, Vendor &vendor);
+            std::map<int, std::unique_ptr<Items>> *itemList, Vendor *vendor);
   void SaveGame(Player *player, Camera *camera,
-                std::map<int, std::unique_ptr<Items>> *itemList, Vendor &vendor,
+                std::map<int, std::unique_ptr<Items>> *itemList, Vendor *vendor,
                 std::string filename);
   void LoadGame(Player *player, Camera *camera,
-                std::map<int, std::unique_ptr<Items>> *itemList, Vendor &vendor,
+                std::map<int, std::unique_ptr<Items>> *itemList, Vendor *vendor,
                 std::string filename);
   void GetSaveNames();
   void newSaveSection(Player *player, Camera *camera,
                       std::map<int, std::unique_ptr<Items>> *itemList,
-                      Vendor &vendor);
+                      Vendor *vendor);
   void vendorMenu(Player &player, float currentWidth, float currentHeight);
   void moneyDisplay(Player &player);
 };

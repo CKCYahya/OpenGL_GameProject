@@ -47,7 +47,7 @@ void Menu::LoadAssets(Shader *shader) {
 
 void Menu::Draw(Window *window, Shader *shader, Player *player, Camera *camera,
                 std::map<int, std::unique_ptr<Items>> *itemList,
-                Vendor &vendor) {
+                Vendor *vendor) {
   shader->Activate();
   glUniform2f(glGetUniformLocation(shader->ID, "texScale"), 1.0f, 1.0f);
   glUniform2f(glGetUniformLocation(shader->ID, "texOffset"), 0.0f, 0.0f);
@@ -275,7 +275,7 @@ void Menu::Draw(Window *window, Shader *shader, Player *player, Camera *camera,
 // SAVE GAME
 void Menu::SaveGame(Player *player, Camera *camera,
                     std::map<int, std::unique_ptr<Items>> *itemList,
-                    Vendor &vendor, std::string filename) {
+                    Vendor *vendor, std::string filename) {
   json jsonfile;
   if (player == nullptr || camera == nullptr || itemList == nullptr) {
     std::cout << "Error: Player, camera, or item list is null!" << std::endl;
@@ -285,6 +285,7 @@ void Menu::SaveGame(Player *player, Camera *camera,
   jsonfile["player"] = player->ToJson();
   jsonfile["camera"] = camera->ToJson();
   jsonfile["itemList"] = Items::ToJson(*itemList);
+  jsonfile["vendor"] = vendor->ToJson();
   std::ofstream ofs("saves/" + filename);
   ofs << jsonfile.dump(4, ' ', true);
   ofs.close();
@@ -293,7 +294,7 @@ void Menu::SaveGame(Player *player, Camera *camera,
 // LOAD GAME
 void Menu::LoadGame(Player *player, Camera *camera,
                     std::map<int, std::unique_ptr<Items>> *itemList,
-                    Vendor &vendor, std::string filename) {
+                    Vendor *vendor, std::string filename) {
   json jsonfile;
   std::ifstream ifs("saves/" + filename);
   if (!ifs.is_open()) {
@@ -307,6 +308,7 @@ void Menu::LoadGame(Player *player, Camera *camera,
     player->FromJson(jsonfile["player"]);
     camera->FromJson(jsonfile["camera"]);
     Items::FromJson(*itemList, jsonfile["itemList"]);
+    vendor->FromJson(jsonfile["vendor"]);
   } catch (json::parse_error &e) {
     std::cerr << "JSON Load Error: " << e.what() << std::endl;
   }
@@ -333,7 +335,7 @@ void Menu::GetSaveNames() {
 
 void Menu::newSaveSection(Player *player, Camera *camera,
                           std::map<int, std::unique_ptr<Items>> *itemList,
-                          Vendor &vendor) {
+                          Vendor *vendor) {
   ImGui::Begin("Save Confirm");
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 3.0f);

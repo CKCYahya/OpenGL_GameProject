@@ -17,6 +17,7 @@
 
 std::vector<glm::vec2> Items::atlasWH;
 std::vector<std::shared_ptr<Texture>> Items::loadedAtlases;
+std::map<int, int> Items::itemValueTable;
 std::vector<std::string> images = {"spritesheet_32x32", "fishing rod"};
 
 Items::Items(const std::string &name, const glm::vec3 &position, int itemID)
@@ -108,27 +109,29 @@ Items::readJsonItems(const char *jsonItems) {
                   } else if (propName == "value") {
                     propValueInt = prop.value("value", 0);
                   }
-                  if (!propValueStr.empty()) {
-                    // Balıkları spawnlama, sadece balık tutmayla elde
-                    // edilsinler
-                    if (propValueStr == "palamut" || propValueStr == "levrek" ||
-                        propValueStr == "istavrit" ||
-                        propValueStr == "uskumru" || propValueStr == "lufer" ||
-                        propValueInt != 0) {
-                      continue;
-                    } else {
-                      auto newItem = std::make_unique<Items>(
-                          propValueStr, glm::vec3(0.0f, 0.0f, 0.0f), localID);
-                      newItem->atlasIndex = i;
-                      newItem->value = propValueInt;
-                      int rastgeleSayi = min + (std::rand() % (max - min + 1));
-                      newItem->position =
-                          glm::vec3(rastgeleSayi, rastgeleSayi, 0.0f);
-                      std::cout << newItem->position.x << " "
-                                << newItem->position.y << std::endl;
-                      itemType[globalID] = std::move(newItem);
-                    }
+                }
+
+                if (!propValueStr.empty()) {
+                  // Fiyat bilgisini her zaman kaydet
+                  itemValueTable[localID] = propValueInt;
+
+                  // Balıkları spawn etme
+                  if (propValueStr == "palamut" || propValueStr == "levrek" ||
+                      propValueStr == "istavrit" || propValueStr == "uskumru" ||
+                      propValueStr == "lufer") {
+                    continue;
                   }
+
+                  // Sadece Olta'yı belirli bir yere spawn et
+                  if (propValueStr == "olta") {
+                    auto newItem = std::make_unique<Items>(
+                        propValueStr, glm::vec3(300.0f, 300.0f, 0.0f), localID);
+                    newItem->atlasIndex = i;
+                    newItem->value = propValueInt;
+                    itemType[globalID] = std::move(newItem);
+                  }
+                  // Diğer itemleri (eğer varsa) buraya ekleyebilirsin veya 
+                  // JSON'daki objeler katmanından okuyabiliriz.
                 }
               }
             }
@@ -307,6 +310,12 @@ void Items::AddItem(Player &player, int itemID, std::string itemName) {
           ImVec2(item.uOffset + 32.0f / Items::atlasWH[item.atlasIndex].x,
                  item.vOffset);
       item.count = 1;
+
+      // Fiyat bilgisini tablodan al
+      if (itemValueTable.find(itemID) != itemValueTable.end()) {
+        item.itemValue = itemValueTable[itemID];
+      }
+
       std::cout << "You added a " << itemName << " to your inventory!"
                 << std::endl;
       return;

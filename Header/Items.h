@@ -64,6 +64,7 @@ public:
   static void UpdateItemValue(Player &player,
                               std::map<int, std::unique_ptr<Items>> &worldItems,
                               Vendor &vendor);
+  static std::map<int, int> itemValueTable;
 };
 
 extern std::vector<std::string> images;

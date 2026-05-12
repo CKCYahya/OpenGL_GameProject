@@ -1,0 +1,18 @@
+
+Header/Items.h & src/Items.cpp
+--`itemValueTable` static map yapısı eklendi. JSON harita dosyasından okunan tüm eşya fiyatlarının (balıklar dahil) merkezi bir tabloda tutulması ve `AddItem` sırasında envanter slotlarına doğru fiyat bilgisinin aktarılması sağlandı.
+--`readJsonItems` fonksiyonu güncellendi. Debug amaçlı kullanılan rastgele eşya spawn mekanizması kaldırılarak "olta" (fishing rod) eşyasının belirli bir koordinatta sabit olarak oluşturulması sağlandı. Balık türündeki eşyaların dünyada spawn olması engellendi.
+--`AddItem` fonksiyonu revize edildi. Envantere yeni bir eşya eklendiğinde `itemValueTable` üzerinden lookup yapılarak `itemValue` alanının doldurulması sağlandı. Bu sayede balıkların 0 bedelle satılma sorunu giderildi.
+
+Header/Vendor.h & src/Vendor.cpp
+--`ToJson` ve `FromJson` fonksiyonları `static` hale getirildi. Geliştirme seviyelerinin (ticaret, balıkçılık, bot) global statik değişkenler üzerinden yönetilmesi ve kayıt dosyalarına kaydedilmesi sağlandı.
+
+Header/Menu.h & src/Menu.cpp
+--`SaveGame` ve `LoadGame` fonksiyonları güncellendi. Kayıt sistemine `Vendor` verileri (satın alınan geliştirmeler) dahil edilerek oyuncu ilerlemesinin oturumlar arası kalıcılığı sağlandı.
+--Menü fonksiyonlarındaki `Vendor` parametreleri referanstan pointer'a (`Vendor*`) dönüştürüldü.
+
+src/Player.cpp
+--`Interact` fonksiyonu düzenlendi. artık itemler envantere eklenirken value değerleri de set ediliyor.
+
+src/main.cpp
+--Oyun döngüsü içindeki `Menu::Draw` çağrısı, güncellenen pointer yapısına uygun hale getirilerek nesne adresi geçilecek şekilde revize edildi.

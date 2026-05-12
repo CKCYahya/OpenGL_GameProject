@@ -28,8 +28,8 @@ public:
   static void UpgradeTrade(Player &player);
   static void UpgradeFishing(Player &player);
   static void UpgradeBoots(Player &player);
-  void ToJson(json &j);
-  void FromJson(json &j);
+  static json ToJson();
+  static void FromJson(json &j);
 
 private:
   glm::vec3 startPos;
