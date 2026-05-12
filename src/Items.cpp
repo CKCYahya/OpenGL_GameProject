@@ -7,6 +7,7 @@
 #include "Texture.h"
 #include "VAO.h"
 #include "VBO.h"
+#include "Vendor.h"
 #include "Window.h"
 #include <cstdlib>
 #include <iostream>
@@ -16,6 +17,7 @@
 
 std::vector<glm::vec2> Items::atlasWH;
 std::vector<std::shared_ptr<Texture>> Items::loadedAtlases;
+std::map<int, int> Items::itemValueTable;
 std::vector<std::string> images = {"spritesheet_32x32", "fishing rod"};
 
 Items::Items(const std::string &name, const glm::vec3 &position, int itemID)
@@ -97,27 +99,39 @@ Items::readJsonItems(const char *jsonItems) {
               for (const auto &item : itemset["tiles"]) {
                 int localID = item.value("id", -1);
                 int globalID = firstGid + localID;
+                std::string propValueStr = "";
+                int propValueInt = 0;
                 for (const auto &prop : item["properties"]) {
                   std::string propName = prop.value("name", "");
-                  std::string propValue = prop.value("value", "");
+
                   if (propName == "item") {
-                    // Balıkları spawnlama, sadece balık tutmayla elde
-                    // edilsinler
-                    if (propValue == "palamut" || propValue == "levrek" ||
-                        propValue == "istavrit" || propValue == "uskumru" ||
-                        propValue == "lufer") {
-                      continue;
-                    }
+                    propValueStr = prop.value("value", "");
+                  } else if (propName == "value") {
+                    propValueInt = prop.value("value", 0);
+                  }
+                }
+
+                if (!propValueStr.empty()) {
+                  // Fiyat bilgisini her zaman kaydet
+                  itemValueTable[localID] = propValueInt;
+
+                  // Balıkları spawn etme
+                  if (propValueStr == "palamut" || propValueStr == "levrek" ||
+                      propValueStr == "istavrit" || propValueStr == "uskumru" ||
+                      propValueStr == "lufer") {
+                    continue;
+                  }
+
+                  // Sadece Olta'yı belirli bir yere spawn et
+                  if (propValueStr == "olta") {
                     auto newItem = std::make_unique<Items>(
-                        propValue, glm::vec3(0.0f, 0.0f, 0.0f), localID);
+                        propValueStr, glm::vec3(300.0f, 300.0f, 0.0f), localID);
                     newItem->atlasIndex = i;
-                    int rastgeleSayi = min + (std::rand() % (max - min + 1));
-                    newItem->position =
-                        glm::vec3(rastgeleSayi, rastgeleSayi, 0.0f);
-                    std::cout << newItem->position.x << " "
-                              << newItem->position.y << std::endl;
+                    newItem->value = propValueInt;
                     itemType[globalID] = std::move(newItem);
                   }
+                  // Diğer itemleri (eğer varsa) buraya ekleyebilirsin veya 
+                  // JSON'daki objeler katmanından okuyabiliriz.
                 }
               }
             }
@@ -207,6 +221,7 @@ nlohmann::json Items::ToJson(std::map<int, std::unique_ptr<Items>> &itemList) {
     nlohmann::json itemJson;
     itemJson["ID"] = item.second->ID;
     itemJson["name"] = item.second->name;
+    itemJson["value"] = item.second->value;
     itemJson["atlasIndex"] = item.second->atlasIndex;
     itemJson["position"]["x"] = item.second->position.x;
     itemJson["position"]["y"] = item.second->position.y;
@@ -226,9 +241,10 @@ void Items::FromJson(std::map<int, std::unique_ptr<Items>> &itemList,
                      nlohmann::json j) {
   itemList.clear();
   for (auto &item : j["items"]) {
-    auto newItem =
-        std::make_unique<Items>(item["name"], glm::vec3(0.0f, 0.0f, 0.0f), item["ID"]);
+    auto newItem = std::make_unique<Items>(
+        item["name"], glm::vec3(0.0f, 0.0f, 0.0f), item["ID"]);
     newItem->ID = item["ID"];
+    newItem->value = item["value"];
     newItem->atlasIndex = item["atlasIndex"];
     newItem->position.x = item["position"]["x"];
     newItem->position.y = item["position"]["y"];
@@ -294,6 +310,12 @@ void Items::AddItem(Player &player, int itemID, std::string itemName) {
           ImVec2(item.uOffset + 32.0f / Items::atlasWH[item.atlasIndex].x,
                  item.vOffset);
       item.count = 1;
+
+      // Fiyat bilgisini tablodan al
+      if (itemValueTable.find(itemID) != itemValueTable.end()) {
+        item.itemValue = itemValueTable[itemID];
+      }
+
       std::cout << "You added a " << itemName << " to your inventory!"
                 << std::endl;
       return;
@@ -301,4 +323,21 @@ void Items::AddItem(Player &player, int itemID, std::string itemName) {
   }
   std::cout << "Inventory is full!" << std::endl;
   return;
+}
+
+void Items::UpdateItemValue(Player &player,
+                            std::map<int, std::unique_ptr<Items>> &worldItems,
+                            Vendor &vendor) {
+  for (auto &item : worldItems) {
+    if (vendor.tradeLevel != UpgradeLevel::MAX &&
+        item.second->name != "UNKNOWN" && item.second->value != 0) {
+      item.second->value = item.second->value + 50;
+    }
+  }
+  for (auto &item : player.slots) {
+    if (vendor.tradeLevel != UpgradeLevel::MAX && item.itemName != "UNKNOWN" &&
+        item.itemValue != 0) {
+      item.itemValue = item.itemValue + 50;
+    }
+  }
 }

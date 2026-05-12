@@ -35,6 +35,8 @@ void NewMap::ParseMap(const json &mapData) {
       if (type == "tilelayer") {
         if (name == "Tile Layer 1") {
           tileIDs = layer["data"].get<std::vector<int>>();
+        } else if (name == "Tile Layer 2") {
+          tileIDs2 = layer["data"].get<std::vector<int>>();
         } else if (name == "collisions") {
           collisionIDs = layer["data"].get<std::vector<int>>();
         }

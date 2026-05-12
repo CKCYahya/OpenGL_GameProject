@@ -13,17 +13,22 @@ GameMap::GameMap(const char *mapFile) {
 
   // Tiled stores data as 1D array row-by-row
   const auto &tiles = newMap->getTileIDs();
+  const auto &tiles2 = newMap->getTileIDs2();
   mapCache.resize(tiles.size());
+  layer2Cache.resize(tiles2.size());
   for (size_t i = 0; i < tiles.size(); ++i) {
     mapCache[i].gid = tiles[i];
+    layer2Cache[i].gid = tiles2[i];
   }
 
   // Fill Collision Cache
   const auto &colData = newMap->getCollisionIDs();
   collisionCache.resize(colData.size());
   waterCache.resize(colData.size());
+  interactionCache.resize(colData.size());
   for (size_t i = 0; i < colData.size(); ++i) {
     // If GID > 0, it's a collision tile
+    interactionCache[i] = (colData[i] == 2472);
     collisionCache[i] = (colData[i] == 2000);
     if (colData[i] == 2014 || colData[i] == 2015 || colData[i] == 2016) {
       waterCache[i] = colData[i];
@@ -35,7 +40,9 @@ GameMap::GameMap(const char *mapFile) {
   atlasTexture =
       std::make_unique<Texture>("image/texture.png", GL_TEXTURE_2D, GL_TEXTURE0,
                                 GL_RGBA, GL_UNSIGNED_BYTE);
-
+  atlasTexture2 =
+      std::make_unique<Texture>("image/decorations-medieval.png", GL_TEXTURE_2D,
+                                GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
   // Generate Minimap
   minimapTexID = GenerateMinimapTexture();
 
@@ -46,6 +53,8 @@ GameMap::GameMap(const char *mapFile) {
 GameMap::~GameMap() {
   if (atlasTexture)
     atlasTexture->Delete();
+  if (atlasTexture2)
+    atlasTexture2->Delete();
 }
 
 void GameMap::SetupMesh() {
@@ -72,7 +81,7 @@ void GameMap::SetupMesh() {
   mapVAO->LinkAttrib(*mapVBO, 1, 2, GL_FLOAT, 5 * sizeof(float),
                      (void *)(3 * sizeof(float)));
 
-  if (!atlasTexture) {
+  if (!atlasTexture || !atlasTexture2) {
     mapVAO->Unbind();
     mapVBO->Unbind();
     mapEBO->Unbind();
@@ -84,8 +93,16 @@ void GameMap::SetupMesh() {
   int cols = (int)(atlasWidth / 32.0f);
   int totalRows = (int)(atlasHeight / 32.0f);
 
+  float atlasWidth2 = (float)atlasTexture2->width;
+  float atlasHeight2 = (float)atlasTexture2->height;
+  int cols2 = (int)(atlasWidth2 / 32.0f);
+  int totalRows2 = (int)(atlasHeight2 / 32.0f);
+
   instanceDataArray.clear();
-  instanceDataArray.reserve(MAP_WIDTH_TILES * MAP_HEIGHT_TILES);
+  instanceDataArray.reserve(MAP_WIDTH_TILES * MAP_HEIGHT_TILES * 2);
+
+  layer2DataArray.clear();
+  layer2DataArray.reserve(MAP_WIDTH_TILES * MAP_HEIGHT_TILES);
 
   for (int curY = 0; curY < MAP_HEIGHT_TILES; curY++) {
     for (int curX = 0; curX < MAP_WIDTH_TILES; curX++) {
@@ -95,42 +112,64 @@ void GameMap::SetupMesh() {
       int tiledRow = MAP_HEIGHT_TILES - 1 - curY;
       int tileIndex = tiledRow * MAP_WIDTH_TILES + curX;
 
-      if (tileIndex < 0 || tileIndex >= mapCache.size())
+      if (tileIndex < 0 || tileIndex >= mapCache.size() ||
+          tileIndex >= layer2Cache.size())
         continue;
 
       int gid = mapCache[tileIndex].gid;
-      if (gid == 0)
-        continue; // Empty tile
-
-      int localID = gid - 1;
-      int col = localID % cols;
-      int row = localID / cols;
-
-      int texRow = totalRows - 1 - row;
-      // Half-pixel inset to prevent tile seam bleeding
-      float padding = 0.5f;
-      float uOffset = (col * 32.0f + padding) / atlasWidth;
-      float vOffset = (texRow * 32.0f + padding) / atlasHeight;
+      int gid2 = layer2Cache[tileIndex].gid;
 
       glm::mat4 model = glm::mat4(1.0f);
       model = glm::translate(model, glm::vec3(xPos, yPos, 0.0f));
 
-      InstanceData inst;
-      inst.model = model;
-      inst.texOffset = glm::vec2(uOffset, vOffset);
-      if (waterCache[tileIndex] != 0) {
-        inst.isWater = 1.0f;
+      if (gid != 0) {
+        int localID = gid - 1;
+        int col = localID % cols;
+        int row = localID / cols;
+
+        int texRow = totalRows - 1 - row;
+        float padding = 0.5f;
+        float uOffset = (col * 32.0f + padding) / atlasWidth;
+        float vOffset = (texRow * 32.0f + padding) / atlasHeight;
+
+        InstanceData inst;
+        inst.model = model;
+        inst.texOffset = glm::vec2(uOffset, vOffset);
+        if (waterCache[tileIndex] != 0) {
+          inst.isWater = 1.0f;
+        }
+        instanceDataArray.push_back(inst);
       }
-      instanceDataArray.push_back(inst);
+
+      if (gid2 != 0) {
+        // Tiled'daki "decorations-medieval" tileset'i 3145'den başlıyor.
+        // Bu yüzden localID hesaplarken 1 yerine 3145 çıkarmalıyız.
+        int localID2 = gid2 - 3145;
+        if (localID2 < 0)
+          localID2 = 0; // Güvenlik önlemi
+
+        int col = localID2 % cols2;
+        int row = localID2 / cols2;
+
+        int texRow = totalRows2 - 1 - row;
+        float padding = 0.5f;
+        float uOffset = (col * 32.0f + padding) / atlasWidth2;
+        float vOffset = (texRow * 32.0f + padding) / atlasHeight2;
+
+        InstanceData inst;
+        inst.model = model;
+        inst.texOffset = glm::vec2(uOffset, vOffset);
+        layer2DataArray.push_back(inst);
+      }
     }
   }
-
-  // Create Instance VBO
+  // Create Instance VBO for Layer 1
   instanceVBO =
       std::make_unique<VBO>((GLfloat *)instanceDataArray.data(),
                             instanceDataArray.size() * sizeof(InstanceData));
 
-  // Configure attributes
+  // Configure attributes for Layer 1
+  mapVAO->Bind();
   instanceVBO->Bind();
 
   for (int i = 0; i < 4; i++) {
@@ -150,6 +189,41 @@ void GameMap::SetupMesh() {
                         (void *)(sizeof(glm::mat4) + sizeof(glm::vec2)));
   glVertexAttribDivisor(7, 1);
 
+  // Configure mapVAO2 and instanceVBO2 for Layer 2
+  mapVAO2 = std::make_unique<VAO>();
+  mapVAO2->Bind();
+  mapVBO->Bind();
+  mapEBO->Bind();
+
+  mapVAO2->LinkAttrib(*mapVBO, 0, 3, GL_FLOAT, 5 * sizeof(float), (void *)0);
+  mapVAO2->LinkAttrib(*mapVBO, 1, 2, GL_FLOAT, 5 * sizeof(float),
+                      (void *)(3 * sizeof(float)));
+
+  instanceVBO2 =
+      std::make_unique<VBO>((GLfloat *)layer2DataArray.data(),
+                            layer2DataArray.size() * sizeof(InstanceData));
+
+  instanceVBO2->Bind();
+  for (int i = 0; i < 4; i++) {
+    glEnableVertexAttribArray(2 + i);
+    glVertexAttribPointer(2 + i, 4, GL_FLOAT, GL_FALSE, sizeof(InstanceData),
+                          (void *)(i * sizeof(glm::vec4)));
+    glVertexAttribDivisor(2 + i, 1);
+  }
+
+  glEnableVertexAttribArray(6);
+  glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, sizeof(InstanceData),
+                        (void *)(sizeof(glm::mat4)));
+  glVertexAttribDivisor(6, 1);
+
+  glEnableVertexAttribArray(7);
+  glVertexAttribPointer(7, 1, GL_FLOAT, GL_FALSE, sizeof(InstanceData),
+                        (void *)(sizeof(glm::mat4) + sizeof(glm::vec2)));
+  glVertexAttribDivisor(7, 1);
+
+  instanceVBO2->Unbind();
+  mapVAO2->Unbind();
+
   instanceVBO->Unbind();
   mapVAO->Unbind();
   mapVBO->Unbind();
@@ -161,13 +235,18 @@ void GameMap::LoadTextures(Shader &shader) {
   if (atlasTexture) {
     atlasTexture->texUnit(shader, "tex0", 0);
   }
+  if (atlasTexture2) {
+    atlasTexture2->texUnit(shader, "tex0", 0);
+  }
 }
 
 void GameMap::Draw(Shader &shader, Camera &camera) {
-  shader.Activate();
+  DrawLayer1(shader, camera);
+  DrawLayer2(shader, camera);
+}
 
-  if (atlasTexture)
-    atlasTexture->Bind();
+void GameMap::DrawLayer1(Shader &shader, Camera &camera) {
+  shader.Activate();
 
   if (!atlasTexture)
     return;
@@ -181,10 +260,7 @@ void GameMap::Draw(Shader &shader, Camera &camera) {
   glm::vec2 texScale((32.0f - 2.0f * tilePadding) / atlasWidth,
                      (32.0f - 2.0f * tilePadding) / atlasHeight);
 
-  glUniform2fv(glGetUniformLocation(shader.ID, "texScale"), 1,
-               glm::value_ptr(texScale));
-
-  // Draw instances statically
+  // --- DRAW LAYER 1 ---
   if (!instanceDataArray.empty()) {
     static float lastUpdateTime = 0.0f;
     float currentTime = glfwGetTime();
@@ -209,10 +285,47 @@ void GameMap::Draw(Shader &shader, Camera &camera) {
                       instanceDataArray.data());
       instanceVBO->Unbind();
     }
+
+    glActiveTexture(GL_TEXTURE0);
+    atlasTexture->Bind();
+    // Pass texScale for layer 1
+    glUniform2fv(glGetUniformLocation(shader.ID, "texScale"), 1,
+                 glm::value_ptr(texScale));
+    glUniform1f(glGetUniformLocation(shader.ID, "isGround"), 1.0f);
+
     mapVAO->Bind();
     glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0,
                             (GLsizei)instanceDataArray.size());
     mapVAO->Unbind();
+  }
+}
+
+void GameMap::DrawLayer2(Shader &shader, Camera &camera) {
+  shader.Activate();
+
+  if (!atlasTexture2)
+    return;
+
+  float atlasWidth2 = (float)atlasTexture2->width;
+  float atlasHeight2 = (float)atlasTexture2->height;
+  float tilePadding = 0.5f;
+  glm::vec2 texScale2((32.0f - 2.0f * tilePadding) / atlasWidth2,
+                      (32.0f - 2.0f * tilePadding) / atlasHeight2);
+
+  if (!layer2DataArray.empty()) {
+    glActiveTexture(GL_TEXTURE0);
+    atlasTexture2->Bind();
+    // Overwrite texScale uniform for layer 2
+    glUniform2fv(glGetUniformLocation(shader.ID, "texScale"), 1,
+                 glm::value_ptr(texScale2));
+    glUniform1f(glGetUniformLocation(shader.ID, "isGround"), 0.0f);
+
+    glUniform1f(glGetUniformLocation(shader.ID, "isGround"), 0.0f);
+
+    mapVAO2->Bind();
+    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0,
+                            (GLsizei)layer2DataArray.size());
+    mapVAO2->Unbind();
   }
 }
 
@@ -326,7 +439,25 @@ bool GameMap::checkCollision(float x, float y) {
   return false;
 }
 
+int GameMap::checkInteraction(float x, float y) {
+  int index = abstractLayerTileIndex(x, y);
+
+  if (index >= 0 && index < interactionCache.size()) {
+    return interactionCache[index];
+  }
+  return 0;
+}
+
 int GameMap::checkWater(float x, float y) {
+  int index = abstractLayerTileIndex(x, y);
+
+  if (index >= 0 && index < waterCache.size()) {
+    return waterCache[index];
+  }
+  return 0;
+}
+
+int GameMap::abstractLayerTileIndex(float x, float y) {
   float localX = x + worldWidth / 2.0f;
   float localY = y + worldHeight / 2.0f;
 
@@ -341,8 +472,5 @@ int GameMap::checkWater(float x, float y) {
   int tiledRow = MAP_HEIGHT_TILES - 1 - tileY;
   int index = tiledRow * MAP_WIDTH_TILES + tileX;
 
-  if (index >= 0 && index < waterCache.size()) {
-    return waterCache[index];
-  }
-  return 0;
+  return index;
 }

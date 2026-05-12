@@ -1,5 +1,6 @@
 #include "Camera.h"
 #include "Fishing.h"
+#include "GLFW/glfw3.h"
 #include "GameMap.h"
 #include "InteractionUI.h"
 #include "Items.h"
@@ -55,7 +56,7 @@ int main() {
   // --- PLAYER ---
   // Use map tile size for player size
   Player player(glm::vec3(0.0f, 0.0f, 0.0f), gameMap.tileSize,
-                300.0f); // Speed=300
+                150.0f); // Speed=150
 
   player.LoadAssets(textureShader);
   // Start camera at (0,0)
@@ -101,6 +102,7 @@ int main() {
   Panel panel;
   Fishing fishingSys;
   InteractionUI interactionUI;
+  Vendor vendor;
   glfwSwapInterval(1);
   Menu menu(&window, &textureShader);
   menu.LoadAssets(&textureShader);
@@ -116,12 +118,23 @@ int main() {
       lastFrame = currentFrame;
 
       glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       ImGui_ImplOpenGL3_NewFrame();
       ImGui_ImplGlfw_NewFrame();
       ImGui::NewFrame();
-      if (menu.state != MenuState::START) {
-        menu.Draw(&window, &textureShader, &player, &camera, &itemList);
+      if (menu.state != MenuState::START && menu.state != MenuState::VENDOR) {
+        menu.Draw(&window, &textureShader, &player, &camera, &itemList,
+                  &vendor);
+        if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS &&
+            menu.state == MenuState::PAUSE) {
+          state = 7;
+        } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) ==
+                       GLFW_RELEASE &&
+                   state == 7) {
+          menu.state = MenuState::START;
+          menu.isGameStarted = true;
+          state = 0;
+        }
       } else {
         textureShader.Activate();
 
@@ -132,10 +145,8 @@ int main() {
         camera.height = winHeight;
         glViewport(0, 0, winWidth, winHeight);
 
-        // Update Player
-        player.Update(window.getGLFWWindow(), deltaTime, gameMap);
-
-        if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS &&
+            menu.isGameStarted == true) {
           state = 5;
         } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) ==
                        GLFW_RELEASE &&
@@ -152,7 +163,9 @@ int main() {
             }
           }
         }
-        interactionUI.showInteractionUI(fishingSys, player, nearItem);
+        bool nearVendor = player.checkInteractionZone(gameMap);
+        interactionUI.showInteractionUI(fishingSys, player, nearVendor,
+                                        nearItem);
 
         // Toggle Camera Mode ("C" key)
         if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_C) == GLFW_PRESS) {
@@ -225,29 +238,50 @@ int main() {
           player.dropItem(player.selectedSlot, itemList);
         }
 
-        if (player.slots[player.selectedSlot].itemID == 0) {
-          fishingSys.Update(window.getGLFWWindow(), deltaTime, player, itemList,
-                            gameMap);
-        }
+        if (menu.state != MenuState::VENDOR) {
+          if (player.slots[player.selectedSlot].itemID == 0) {
+            fishingSys.Update(window.getGLFWWindow(), deltaTime, player,
+                              itemList, gameMap, vendor);
+          }
 
-        // Update Camera
-        camera.Inputs(
-            window.getGLFWWindow(), (float)deltaTime, player.Position,
-            glm::vec4(-gameMap.worldWidth / 2.0f, -gameMap.worldHeight / 2.0f,
-                      gameMap.worldWidth / 2.0f, gameMap.worldHeight / 2.0f));
+          // Update Player
+          player.Update(window.getGLFWWindow(), deltaTime, gameMap);
+          // Update Camera
+          camera.Inputs(
+              window.getGLFWWindow(), (float)deltaTime, player.Position,
+              glm::vec4(-gameMap.worldWidth / 2.0f, -gameMap.worldHeight / 2.0f,
+                        gameMap.worldWidth / 2.0f, gameMap.worldHeight / 2.0f));
+        }
 
         // --- RENDER ---
-
-        // Activate Map Shader and Update Matrix
+        if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_E) == GLFW_PRESS &&
+            player.checkInteractionZone(gameMap)) {
+          state = 6;
+        } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_E) ==
+                       GLFW_RELEASE &&
+                   state == 6) {
+          menu.state = MenuState::VENDOR;
+          state = 0;
+        }
+        if (menu.state == MenuState::VENDOR) {
+          menu.vendorMenu(player, width, height);
+        }
+        if (Vendor::hasUpdated) {
+          Items::UpdateItemValue(player, itemList, vendor);
+          Vendor::hasUpdated = false;
+        }
+        menu.moneyDisplay(player);
+        // Activate Map Shader and Update Matrix for Layer 1
         mapShader.Activate();
         camera.updateMatrix(-100.0f, 100.0f, mapShader, "camMatrix");
+        gameMap.DrawLayer1(mapShader, camera);
 
-        // Draw Map
-        gameMap.Draw(mapShader, camera);
-
-        // Activate Texture Shader and Update Matrix for entities
+        // Activate Texture Shader and Update Matrix for entities (Player,
+        // Items)
         textureShader.Activate();
         camera.updateMatrix(-100.0f, 100.0f, textureShader, "camMatrix");
+
+        // Draw Items (Below player/Layer 2 usually)
         if (!itemList.empty()) {
           itemList.begin()->second->drawAtlas(textureShader, itemList, winWidth,
                                               winHeight, camera);
@@ -256,20 +290,10 @@ int main() {
         // Draw Player
         player.Draw(textureShader);
 
-        // Draw Items
-        // Activate Texture Shader and Update Matrix for entities
-        textureShader.Activate();
-        camera.updateMatrix(-100.0f, 100.0f, textureShader, "camMatrix");
-
-        // Draw Player
-        player.Draw(textureShader);
-
-        // Draw Items
-
-        if (!itemList.empty()) {
-          itemList.begin()->second->drawAtlas(textureShader, itemList, winWidth,
-                                              winHeight, camera);
-        }
+        // Activate Map Shader again for Layer 2 (Overlays like trees)
+        mapShader.Activate();
+        camera.updateMatrix(-100.0f, 100.0f, mapShader, "camMatrix");
+        gameMap.DrawLayer2(mapShader, camera);
 
         // --- IMGUI RENDER ---
         const float PAD = 10.0f;
@@ -317,12 +341,12 @@ int main() {
   }
 
   textureShader.Delete();
-    mapShader.Delete();
+  mapShader.Delete();
 
-    // Explicit ImGui Cleanup
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+  // Explicit ImGui Cleanup
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
 
-    return 0;
-}
+  return 0;
+}

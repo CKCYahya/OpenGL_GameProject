@@ -2,10 +2,12 @@
 #define MENU_H
 
 #include "EBO.h"
+#include "GameMap.h"
 #include "Shader.h"
 #include "Texture.h"
 #include "VAO.h"
 #include "VBO.h"
+#include "Vendor.h"
 #include "Window.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -20,7 +22,16 @@ class Player;
 class Camera;
 class Items;
 
-enum class MenuState { MAIN_MENU, START, SETTINGS, PAUSE, SAVE, LOAD, EXIT };
+enum class MenuState {
+  MAIN_MENU,
+  START,
+  SETTINGS,
+  PAUSE,
+  SAVE,
+  LOAD,
+  EXIT,
+  VENDOR,
+};
 
 class Menu {
 public:
@@ -29,7 +40,9 @@ public:
   MenuState state;
   MenuState previousState;
   bool isGameStarted;
+
   std::unique_ptr<Texture> menuTexture;
+  std::unique_ptr<Texture> purseTexture;
   std::unique_ptr<VAO> vao;
   std::unique_ptr<VBO> vbo;
   std::unique_ptr<EBO> ebo;
@@ -39,16 +52,19 @@ public:
   ~Menu();
   void LoadAssets(Shader *shader);
   void Draw(Window *window, Shader *shader, Player *player, Camera *camera,
-            std::map<int, std::unique_ptr<Items>> *itemList);
+            std::map<int, std::unique_ptr<Items>> *itemList, Vendor *vendor);
   void SaveGame(Player *player, Camera *camera,
-                std::map<int, std::unique_ptr<Items>> *itemList,
+                std::map<int, std::unique_ptr<Items>> *itemList, Vendor *vendor,
                 std::string filename);
   void LoadGame(Player *player, Camera *camera,
-                std::map<int, std::unique_ptr<Items>> *itemList,
+                std::map<int, std::unique_ptr<Items>> *itemList, Vendor *vendor,
                 std::string filename);
   void GetSaveNames();
   void newSaveSection(Player *player, Camera *camera,
-                      std::map<int, std::unique_ptr<Items>> *itemList);
+                      std::map<int, std::unique_ptr<Items>> *itemList,
+                      Vendor *vendor);
+  void vendorMenu(Player &player, float currentWidth, float currentHeight);
+  void moneyDisplay(Player &player);
 };
 
 #endif

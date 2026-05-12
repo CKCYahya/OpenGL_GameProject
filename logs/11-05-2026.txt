@@ -1,0 +1,27 @@
+Header/Player.h & src/Player.cpp
+--`checkInteractionZone` fonksiyonundaki mantık hatası düzeltildi; `interactionCache` içindeki boolean sonuç (0/1) kontrolü 2472 yerine 1 üzerinden yapılacak şekilde güncellendi.
+--Oyuncunun başlangıç hızı 300'den 150'ye düşürülerek Boots Upgrade mekaniğine temel oluşturuldu.
+
+Header/Menu.h & src/Menu.cpp
+--`moneyDisplay` (Cüzdan HUD) baştan tasarlandı; `Purse.png` ikonu eklendi ve altın miktarı stilize edilerek ekranın sağ üstüne sabitlendi.
+--Vendor menüsü ana menüden bağımsız, ekranın ortasında açılan, yarı şeffaf ve altın çerçeveli şık bir popup paneline dönüştürüldü.
+--Ana menü arka plan resminin sadece oyun başlamadan önce gözükmesi sağlandı, Vendor veya Pause menülerinde arka planın temiz kalması sağlandı.
+
+Header/Vendor.h & src/Vendor.cpp
+--`UpgradeLevel` (LVL1, LVL2, LVL3, MAX) enum yapısı eklendi.
+--Geliştirme sistemi üç ana kategoriye ayrıldı: 
+  * Trade (Eşya satış değerlerini artırır)
+  * Fishing (Balık tutma süresini kısaltır)
+  * Boots (Oyuncu hareket hızını artırır)
+--Vendor verilerinin (seviyeler vb.) kaydedilmesi ve yüklenmesi için `ToJson` ve `FromJson` fonksiyonları implemente edildi.
+--Statik değişkenler (`tradeLevel`, `fishingLevel`, `bootLevel`, `hasUpdated`) tanımlanarak tüm sistemlerden erişilebilir hale getirildi.
+
+Header/Fishing.h & src/Fishing.cpp
+--`Fishing::Update` fonksiyonu `Vendor::fishingLevel` ile entegre edildi. Olta seviyesi arttıkça balığın yeme gelme süresi (timer) dinamik olarak kısalacak şekilde güncellendi.
+
+Header/Items.h & src/Items.cpp
+--`UpdateItemValue` fonksiyonu eklendi. Trade Upgrade yapıldığında hem dünyadaki eşyaların hem de oyuncunun envanterindeki eşyaların satış değerlerinin kalıcı olarak artması sağlandı.
+
+src/main.cpp
+--Vendor sistemindeki güncellemeleri anlık olarak yakalamak için `Vendor::hasUpdated` kontrolü eklendi.
+--Menü geçişleri ve ESC tuşu mantığı, Vendor menüsü açıkken hareketin kilitlenmesi ve menülerin çakışmaması için optimize edildi.

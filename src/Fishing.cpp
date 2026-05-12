@@ -24,7 +24,7 @@ void Fishing::Catch(Player &player,
 
 void Fishing::Update(GLFWwindow *window, float dt, Player &player,
                      std::map<int, std::unique_ptr<Items>> &itemList,
-                     GameMap &gameMap) {
+                     GameMap &gameMap, Vendor &vendor) {
   // Update the lock state
   if (glfwGetKey(window, GLFW_KEY_F) == GLFW_RELEASE) {
     hasReleasedKey = true;
@@ -45,8 +45,13 @@ void Fishing::Update(GLFWwindow *window, float dt, Player &player,
         currentState = States::CASTING;
         player.state = State::FISHING;
         player.fishAnim->SetRange(0, 2, false); // Frames 0-2, one-shot
-        timer = 2.0f + static_cast<float>(rand()) /
-                           (static_cast<float>(RAND_MAX / (5.0f - 2.0f)));
+        float levelFactor = static_cast<float>(Vendor::fishingLevel);
+        float minWait = 4.0f / levelFactor;
+        float maxWait = 7.0f / levelFactor;
+
+        timer =
+            minWait + static_cast<float>(rand()) /
+                          (static_cast<float>(RAND_MAX / (maxWait - minWait)));
       }
     } else {
       currentState = States::NOT_AVAILABLE;

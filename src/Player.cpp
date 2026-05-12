@@ -13,6 +13,7 @@ Player::Player(glm::vec3 startPos, float size, float speed)
   walkAnim = new Animations(8, 0.1f, 4, 2);
   fishAnim = new Animations(8, 0.15f, 4, 2);
   selectedSlot = -1;
+  money = 10000;
   slotAmount = sizeof(this->slots) / sizeof(this->slots[0]);
   interactionRadius =
       size * 1.5f; // Interaction radius is 1.5 times player size
@@ -215,6 +216,7 @@ ImTextureID Player::Interact(Items &item) {
       this->slots[slotIndex].itemName = item.name;
       this->slots[slotIndex].atlasID = item.loadedAtlases[item.atlasIndex]->ID;
       this->slots[slotIndex].count += 1;
+      this->slots[slotIndex].itemValue = item.value;
       float atlasW = item.atlasWH[item.atlasIndex].x;
       float atlasH = item.atlasWH[item.atlasIndex].y;
       float uOff = item.uOffset;
@@ -270,6 +272,10 @@ void Player::dropItem(int selectedSlot,
     slots[selectedSlot].itemID = -1;
     slots[selectedSlot].atlasID = 0;
     slots[selectedSlot].count = 0;
+    slots[selectedSlot].itemValue = 0;
+    slots[selectedSlot].itemName = "UNKNOWN";
+    slots[selectedSlot].uv0 = ImVec2(0, 0);
+    slots[selectedSlot].uv1 = ImVec2(0, 0);
   }
 }
 
@@ -319,13 +325,13 @@ void Player::getAnimation(std::string animType, int direction) {
 
 nlohmann::json Player::ToJson() {
   nlohmann::json j;
-
   j["position"]["x"] = Position.x;
   j["position"]["y"] = Position.y;
   j["position"]["z"] = Position.z;
   j["direction"] = direction;
   j["selectedSlot"] = selectedSlot;
   j["speed"] = speed;
+  j["money"] = money;
   j["state"] = static_cast<int>(state);
 
   nlohmann::json inventoryArray = nlohmann::json::array();
@@ -333,8 +339,10 @@ nlohmann::json Player::ToJson() {
   for (int i = 0; i < slotAmount; ++i) {
     nlohmann::json slotData;
     slotData["itemID"] = slots[i].itemID;
+    slotData["itemName"] = slots[i].itemName;
     slotData["count"] = slots[i].count;
     slotData["atlasID"] = slots[i].atlasID;
+    slotData["itemValue"] = slots[i].itemValue;
     slotData["uv0"] = {slots[i].uv0.x, slots[i].uv0.y};
     slotData["uv1"] = {slots[i].uv1.x, slots[i].uv1.y};
     inventoryArray.push_back(slotData);
@@ -348,11 +356,14 @@ void Player::Reset() {
   Position = glm::vec3(0.0f, 0.0f, 0.0f);
   direction = 0;
   selectedSlot = 0;
-  speed = 300.0f;
+  speed = 150.0f;
+  money = 0;
   state = State::IDLE;
   for (int i = 0; i < slotAmount; ++i) {
     slots[i].itemID = -1;
+    slots[i].itemName = "UNKNOWN";
     slots[i].atlasID = 0;
+    slots[i].itemValue = 0;
     slots[i].count = 0;
     slots[i].uv0 = ImVec2(0.0f, 0.0f);
     slots[i].uv1 = ImVec2(0.0f, 0.0f);
@@ -366,14 +377,26 @@ void Player::FromJson(nlohmann::json j) {
   direction = j["direction"];
   selectedSlot = j["selectedSlot"];
   speed = j["speed"];
+  money = j["money"];
   state = static_cast<State>(j["state"]);
   for (int i = 0; i < slotAmount; ++i) {
     slots[i].itemID = j["inventory"][i]["itemID"];
+    slots[i].itemName = j["inventory"][i]["itemName"];
     slots[i].count = j["inventory"][i]["count"];
     slots[i].atlasID = j["inventory"][i]["atlasID"];
+    slots[i].itemValue = j["inventory"][i]["itemValue"];
     slots[i].uv0.x = j["inventory"][i]["uv0"][0];
     slots[i].uv0.y = j["inventory"][i]["uv0"][1];
     slots[i].uv1.x = j["inventory"][i]["uv1"][0];
     slots[i].uv1.y = j["inventory"][i]["uv1"][1];
   }
+}
+
+bool Player::checkInteractionZone(GameMap &gameMap) {
+  int interactionType = -1;
+  interactionType = gameMap.checkInteraction((int)Position.x, (int)Position.y);
+  if (interactionType == 1) {
+    return true;
+  }
+  return false;
 }
