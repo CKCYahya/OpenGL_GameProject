@@ -24,12 +24,14 @@ GameMap::GameMap(const char *mapFile) {
   // Fill Collision Cache
   const auto &colData = newMap->getCollisionIDs();
   collisionCache.resize(colData.size());
+  frontCache.resize(colData.size());
   waterCache.resize(colData.size());
   interactionCache.resize(colData.size());
   for (size_t i = 0; i < colData.size(); ++i) {
     // If GID > 0, it's a collision tile
     interactionCache[i] = (colData[i] == 2472);
     collisionCache[i] = (colData[i] == 2000);
+    frontCache[i] = (colData[i] == 2444);
     if (colData[i] == 2014 || colData[i] == 2015 || colData[i] == 2016) {
       waterCache[i] = colData[i];
     } else {
@@ -119,8 +121,9 @@ void GameMap::SetupMesh() {
       int gid = mapCache[tileIndex].gid;
       int gid2 = layer2Cache[tileIndex].gid;
 
+      // Layer 1 (ground): always behind everything
       glm::mat4 model = glm::mat4(1.0f);
-      model = glm::translate(model, glm::vec3(xPos, yPos, 0.0f));
+      model = glm::translate(model, glm::vec3(xPos, yPos, -50.0f));
 
       if (gid != 0) {
         int localID = gid - 1;
@@ -157,7 +160,16 @@ void GameMap::SetupMesh() {
         float vOffset = (texRow * 32.0f + padding) / atlasHeight2;
 
         InstanceData inst;
-        inst.model = model;
+        // Layer 2 (decorations): Z-depth based on the base Y position
+        float base_y = yPos - tileSize / 2.0f;
+        float zDepth2 = -base_y * 0.001f;
+        // If the user marked this tile as "front" in the collision layer (GID 2444)
+        if (frontCache[tileIndex]) {
+            zDepth2 += 50.0f;
+        }
+        glm::mat4 model2 = glm::mat4(1.0f);
+        model2 = glm::translate(model2, glm::vec3(xPos, yPos, zDepth2));
+        inst.model = model2;
         inst.texOffset = glm::vec2(uOffset, vOffset);
         layer2DataArray.push_back(inst);
       }

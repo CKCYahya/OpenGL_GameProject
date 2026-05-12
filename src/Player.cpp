@@ -164,10 +164,6 @@ void Player::Draw(Shader &shader) {
                 uv1.y - uv0.y);
     glUniform2f(glGetUniformLocation(shader.ID, "texOffset"), uv0.x, uv0.y);
     getAnimation("walk", direction);
-  } else if (state == State::IDLE) {
-    glUniform2f(glGetUniformLocation(shader.ID, "texScale"), 1.0f, 1.0f);
-    glUniform2f(glGetUniformLocation(shader.ID, "texOffset"), 0.0f, 0.0f);
-    getAnimation("idle", direction);
   } else if (state == State::FISHING) {
     glm::vec2 uv0, uv1;
     fishAnim->GetUVCoordinates(uv0, uv1);
@@ -175,11 +171,18 @@ void Player::Draw(Shader &shader) {
                 uv1.y - uv0.y);
     glUniform2f(glGetUniformLocation(shader.ID, "texOffset"), uv0.x, uv0.y);
     getAnimation("fishing", direction);
+  } else {
+    glUniform2f(glGetUniformLocation(shader.ID, "texScale"), 1.0f, 1.0f);
+    glUniform2f(glGetUniformLocation(shader.ID, "texOffset"), 0.0f, 0.0f);
+    getAnimation("idle", direction);
   }
 
-  // Create Model Matrix
+  // Create Model Matrix with Y-based Z-depth (from base of sprite)
+  float base_y = Position.y - size;
+  float zDepth = -base_y * 0.001f;
   playerModel = glm::mat4(1.0f);
-  playerModel = glm::translate(playerModel, Position);
+  playerModel =
+      glm::translate(playerModel, glm::vec3(Position.x, Position.y, zDepth));
 
   glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE,
                      glm::value_ptr(playerModel));
@@ -284,22 +287,29 @@ void Player::drawItem(Shader &shader) {
       state == State::IDLE) {
     glm::mat4 itemModel = glm::mat4(1.0f);
 
+    float base_y = Position.y - size;
+    float itemZ = -base_y * 0.001f + 0.0001f; // Slightly in front of player
+
     if (direction == 0) {
       handposition = Position + glm::vec3(-size * 0.35f, -size * 0.2f, 0.0f);
+      handposition.z = itemZ;
       itemModel = glm::translate(itemModel, handposition);
-      itemModel = glm::scale(itemModel, glm::vec3(0.3f, 0.3f, 0.3f));
+      itemModel = glm::scale(itemModel, glm::vec3(0.3f, 0.3f, 1.0f));
     } else if (direction == 1) {
-      handposition = Position + glm::vec3(size * 0.35f, -size * 0.2f, -0.2f);
+      handposition = Position + glm::vec3(size * 0.35f, -size * 0.2f, 0.0f);
+      handposition.z = itemZ - 0.0002f; // Slightly behind player
       itemModel = glm::translate(itemModel, handposition);
-      itemModel = glm::scale(itemModel, glm::vec3(-0.3f, 0.3f, -0.3f));
+      itemModel = glm::scale(itemModel, glm::vec3(-0.3f, 0.3f, 1.0f));
     } else if (direction == 2) {
       handposition = Position + glm::vec3(-size * 0.4f, -size * 0.2f, 0.0f);
+      handposition.z = itemZ;
       itemModel = glm::translate(itemModel, handposition);
-      itemModel = glm::scale(itemModel, glm::vec3(0.3f, 0.3f, 0.3f));
+      itemModel = glm::scale(itemModel, glm::vec3(0.3f, 0.3f, 1.0f));
     } else if (direction == 3) {
       handposition = Position + glm::vec3(-size * 0.2f, -size * 0.2f, 0.0f);
+      handposition.z = itemZ;
       itemModel = glm::translate(itemModel, handposition);
-      itemModel = glm::scale(itemModel, glm::vec3(-0.3f, 0.3f, 0.3f));
+      itemModel = glm::scale(itemModel, glm::vec3(-0.3f, 0.3f, 1.0f));
     }
     glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE,
                        glm::value_ptr(itemModel));
@@ -394,7 +404,10 @@ void Player::FromJson(nlohmann::json j) {
 
 bool Player::checkInteractionZone(GameMap &gameMap) {
   int interactionType = -1;
-  interactionType = gameMap.checkInteraction((int)Position.x, (int)Position.y);
+  // Karakterin merkez noktası yerine ayaklarının bastığı noktaya (ayak
+  // hizasına) bakıyoruz.
+  float feetY = Position.y - (size / 2.0f);
+  interactionType = gameMap.checkInteraction((int)Position.x, (int)feetY);
   if (interactionType == 1) {
     return true;
   }

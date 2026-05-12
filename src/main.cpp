@@ -61,12 +61,20 @@ int main() {
 
   player.LoadAssets(textureShader);
 
-  // --- NPC ---
-  Npc npc;
+  // --- NPC (Walker) ---
+  Npc npc(NpcBehavior::WALKER);
   npc.LoadAssets(textureShader);
   npc.position = player.Position +
                  glm::vec3(gameMap.tileSize, 0.0f, 0.0f); // Spawn near player
   npc.PickRandomTarget(gameMap);
+  npc.FindPath(gameMap);
+
+  // --- NPC (Fisher) ---
+  Npc fisherNpc(NpcBehavior::FISHER);
+  fisherNpc.LoadAssets(textureShader);
+  // Place near water — adjust coordinates as needed for your map
+  fisherNpc.position = glm::vec3(-137.499f, 339.587f, 0.0f);
+  fisherNpc.direction = 0; // Facing down (toward water)
 
   // Start camera at (0,0)
   Camera camera(width, height, glm::vec3(0.0f, 0.0f, 0.0f));
@@ -105,7 +113,8 @@ int main() {
   bool isFullscreen = false;
   int oldWinPosX = 0, oldWinPosY = 0;
   int oldWinWidth = width, oldWinHeight = height;
-  glDisable(GL_DEPTH_TEST);
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LEQUAL);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   Panel panel;
@@ -154,8 +163,17 @@ int main() {
         camera.height = winHeight;
         glViewport(0, 0, winWidth, winHeight);
 
-        // Update NPC
+        // Recalculate maxZoom to prevent seeing outside the map
+        float zw = gameMap.worldWidth / (float)winWidth;
+        float zh = gameMap.worldHeight / (float)winHeight;
+        camera.maxZoom = (zw < zh) ? zw : zh;
+        if (camera.zoom > camera.maxZoom) {
+          camera.zoom = camera.maxZoom;
+        }
+
+        // Update NPCs
         npc.Update(deltaTime, gameMap);
+        fisherNpc.Update(deltaTime, gameMap);
 
         if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
           state = 5;
@@ -310,9 +328,10 @@ int main() {
         textureShader.Activate();
         camera.updateMatrix(-100.0f, 100.0f, textureShader, "camMatrix");
 
-        // Draw Player and NPC
+        // Draw Player and NPCs
         player.Draw(textureShader);
         npc.Draw(textureShader, camera);
+        fisherNpc.Draw(textureShader, camera);
 
         // Draw Items
 

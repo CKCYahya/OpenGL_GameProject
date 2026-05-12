@@ -189,8 +189,10 @@ void Items::drawAtlas(Shader &shader,
       glm::vec2 texScale(32.0f / atlasWH[i].x, 32.0f / atlasWH[i].y);
       glUniform2fv(glGetUniformLocation(shader.ID, "texScale"), 1,
                    glm::value_ptr(texScale));
+      float base_y = item.second->position.y - 16.0f; // item size assumed 16
+      float zDepth = -base_y * 0.001f;
       glm::mat4 model = glm::mat4(1.0f);
-      model = glm::translate(model, item.second->position);
+      model = glm::translate(model, glm::vec3(item.second->position.x, item.second->position.y, zDepth));
       glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE,
                          glm::value_ptr(model));
       item.second->vao->Bind();
@@ -280,18 +282,18 @@ int Items::GetAtlasIndex(int itemID) {
   return -1;
 }
 
-void Items::AddItem(Player &player, int itemID, std::string itemName) {
+bool Items::AddItem(Player &player, int itemID, std::string itemName) {
   if (itemID < 0) {
     std::cerr << "Error: Invalid item ID passed to AddItem (" << itemID << ")"
               << std::endl;
-    return;
+    return false;
   }
   for (auto &item : player.slots) {
-    if (item.itemID == itemID && item.itemID != -1) {
+    if (item.itemID == itemID && item.itemID != -1 && item.count < 3) {
       item.count += 1;
       std::cout << "You added a " << itemName << " to your inventory!"
                 << std::endl;
-      return;
+      return true;
     }
   }
   for (int i = 0; i < 5; i++) {
@@ -318,11 +320,11 @@ void Items::AddItem(Player &player, int itemID, std::string itemName) {
 
       std::cout << "You added a " << itemName << " to your inventory!"
                 << std::endl;
-      return;
+      return true;
     }
   }
   std::cout << "Inventory is full!" << std::endl;
-  return;
+  return false;
 }
 
 void Items::UpdateItemValue(Player &player,

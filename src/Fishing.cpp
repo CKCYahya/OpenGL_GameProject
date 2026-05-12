@@ -3,23 +3,23 @@
 #include "Player.h"
 #include <iostream>
 
-void Fishing::Catch(Player &player,
+bool Fishing::Catch(Player &player,
                     std::map<int, std::unique_ptr<Items>> &itemList,
                     GameMap &gameMap) {
   auto it = fishingLootTable.find(waterType);
 
   if (it == fishingLootTable.end()) {
-    return;
+    return false;
   }
 
   int chances = rand() % 100;
 
   for (const auto &loot : it->second) {
     if (chances < loot.maxChance) {
-      Items::AddItem(player, loot.itemID, loot.itemName);
-      break;
+      return Items::AddItem(player, loot.itemID, loot.itemName);
     }
   }
+  return false;
 }
 
 void Fishing::Update(GLFWwindow *window, float dt, Player &player,
@@ -110,13 +110,17 @@ void Fishing::Update(GLFWwindow *window, float dt, Player &player,
     timer -= dt;
 
     if (canAction) {
-      Catch(player, itemList, gameMap);
+      bool added = Catch(player, itemList, gameMap);
+      if (!added) {
+        player.state = State::FULL_INVENTORY;
+      } else {
+        player.state = State::IDLE;
+      }
       hasReleasedKey = false;
       currentState = States::NOT_AVAILABLE;
-      player.state = State::IDLE;
     } else if (timer <= 0.0f) {
       std::cout << "The fish got away..." << std::endl;
-      currentState = States::NOT_AVAILABLE;
+      currentState = States::ESCAPED;
       player.state = State::IDLE;
     }
   }

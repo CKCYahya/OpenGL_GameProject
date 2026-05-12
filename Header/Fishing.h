@@ -20,7 +20,7 @@ static const std::unordered_map<int, std::vector<FishLoot>> fishingLootTable = {
     {2015, {{50, 88, "istavrit"}, {100, 89, "uskumru"}}},
     {2016, {{35, 90, "lufer"}, {100, 87, "levrek"}}}};
 
-enum class States { NOT_AVAILABLE, AVAILABLE, CASTING, WAITING, CAUGHT };
+enum class States { NOT_AVAILABLE, AVAILABLE, CASTING, WAITING, CAUGHT, ESCAPED };
 
 class Fishing {
 public:
@@ -28,7 +28,7 @@ public:
   bool isFishing = false;
   States currentState = States::NOT_AVAILABLE;
   float timer = 0.0f;
-  void Catch(Player &player, std::map<int, std::unique_ptr<Items>> &itemList,
+  bool Catch(Player &player, std::map<int, std::unique_ptr<Items>> &itemList,
              GameMap &gameMap);
   void Update(GLFWwindow *window, float dt, Player &player,
               std::map<int, std::unique_ptr<Items>> &itemList, GameMap &gameMap,

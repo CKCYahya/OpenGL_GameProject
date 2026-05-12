@@ -18,7 +18,8 @@ void InteractionUI::showInteractionUI(Fishing &fishing, Player &player,
                                       bool &nearVendor, bool nearItem) {
   if (nearItem || player.state == State::FULL_INVENTORY ||
       fishing.currentState == States::AVAILABLE ||
-      fishing.currentState == States::CAUGHT || nearVendor) {
+      fishing.currentState == States::CAUGHT || 
+      fishing.currentState == States::ESCAPED || nearVendor) {
 
     if (state == PopupState::HIDE) {
       lastTime = glfwGetTime();
@@ -26,6 +27,14 @@ void InteractionUI::showInteractionUI(Fishing &fishing, Player &player,
 
     if (player.state == State::FULL_INVENTORY) {
       strcpy_s(message, "Inventory is full");
+      if (glfwGetTime() - lastTime > 2.0f) {
+        player.state = State::IDLE;
+      }
+    } else if (fishing.currentState == States::ESCAPED) {
+      strcpy_s(message, "Fish escaped!");
+      if (glfwGetTime() - lastTime > 2.0f) {
+        fishing.currentState = States::NOT_AVAILABLE;
+      }
     } else if (fishing.currentState == States::AVAILABLE) {
       strcpy_s(message, "F: Start fishing");
     } else if (fishing.currentState == States::CAUGHT) {

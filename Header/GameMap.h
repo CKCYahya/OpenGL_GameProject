@@ -45,6 +45,7 @@ public:
   std::vector<MapTile> mapCache;     // Visual Layer
   std::vector<MapTile> layer2Cache;  // Visual Layer
   std::vector<bool> collisionCache;  // Collision Layer (true = blocked)
+  std::vector<bool> frontCache;      // Front Layer (true = front)
   std::vector<int> waterCache;       // Water Layer (true = water)
   std::vector<int> interactionCache; // Interaction Layer (true = water)
   GLuint minimapTexID;

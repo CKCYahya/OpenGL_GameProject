@@ -60,7 +60,7 @@ public:
                        nlohmann::json j);
   static glm::vec2 CalculateUV(int itemID, int atlasIndex);
   static int GetAtlasIndex(int itemID);
-  static void AddItem(Player &player, int itemID, std::string itemName);
+  static bool AddItem(Player &player, int itemID, std::string itemName);
   static void UpdateItemValue(Player &player,
                               std::map<int, std::unique_ptr<Items>> &worldItems,
                               Vendor &vendor);
