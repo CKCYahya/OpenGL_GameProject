@@ -153,8 +153,7 @@ int main() {
         camera.height = winHeight;
         glViewport(0, 0, winWidth, winHeight);
 
-        // Update Player and NPC
-        player.Update(window.getGLFWWindow(), deltaTime, gameMap);
+        // Update NPC
         npc.Update(deltaTime, gameMap);
 
         if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -168,218 +167,215 @@ int main() {
             menu.state = MenuState::PAUSE;
             state = 0;
           }
+        }
 
-          bool nearItem = false;
+        bool nearItem = false;
+        for (const auto &itemPair : itemList) {
+          if (itemPair.second->isActive) {
+            if (itemPair.second->isItemInRange(player)) {
+              nearItem = true;
+            }
+          }
+        }
+        bool nearVendor = player.checkInteractionZone(gameMap);
+        interactionUI.showInteractionUI(fishingSys, player, nearVendor,
+                                        nearItem);
+
+        // Toggle Camera Mode ("C" key)
+        if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_C) == GLFW_PRESS) {
+          state = 2;
+        } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_C) ==
+                       GLFW_RELEASE &&
+                   state == 2) {
+          camera.mode =
+              (camera.mode == CAMERA_FREE) ? CAMERA_LOCKED : CAMERA_FREE;
+          state = 0;
+        }
+
+        // Toggle Item Interaction ("E" key)
+        if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_E) == GLFW_PRESS) {
+          state = 1;
+
+        } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_E) ==
+                       GLFW_RELEASE &&
+                   state == 1) {
+          state = 0;
           for (const auto &itemPair : itemList) {
             if (itemPair.second->isActive) {
-              if (itemPair.second->isItemInRange(player)) {
-                nearItem = true;
-              }
+              player.Interact(*(itemPair.second));
             }
           }
-          bool nearVendor = player.checkInteractionZone(gameMap);
-          interactionUI.showInteractionUI(fishingSys, player, nearVendor,
-                                          nearItem);
-
-          // Toggle Camera Mode ("C" key)
-          if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_C) == GLFW_PRESS) {
-            state = 2;
-          } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_C) ==
-                         GLFW_RELEASE &&
-                     state == 2) {
-            camera.mode =
-                (camera.mode == CAMERA_FREE) ? CAMERA_LOCKED : CAMERA_FREE;
-            state = 0;
-          }
-
-          // Toggle Item Interaction ("E" key)
-          if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_E) == GLFW_PRESS) {
-            state = 1;
-
-          } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_E) ==
-                         GLFW_RELEASE &&
-                     state == 1) {
-            state = 0;
-            for (const auto &itemPair : itemList) {
-              if (itemPair.second->isActive) {
-                player.Interact(*(itemPair.second));
-              }
-            }
-          }
-
-          if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_F12) == GLFW_PRESS) {
-            state = 4;
-          } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_F12) ==
-                         GLFW_RELEASE &&
-                     state == 4) {
-            if (isFullscreen) {
-              glfwSetWindowMonitor(window.getGLFWWindow(), NULL, oldWinPosX,
-                                   oldWinPosY, oldWinWidth, oldWinHeight, 0);
-            } else {
-              glfwGetWindowPos(window.getGLFWWindow(), &oldWinPosX,
-                               &oldWinPosY);
-              glfwGetWindowSize(window.getGLFWWindow(), &oldWinWidth,
-                                &oldWinHeight);
-              glfwSetWindowMonitor(window.getGLFWWindow(), primaryMonitor, 0, 0,
-                                   mode->width, mode->height,
-                                   mode->refreshRate);
-            }
-            isFullscreen = !isFullscreen;
-            state = 0;
-          }
-
-          if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_1) == GLFW_PRESS) {
-            player.selectedSlot = 0;
-          } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_2) ==
-                     GLFW_PRESS) {
-            player.selectedSlot = 1;
-          } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_3) ==
-                     GLFW_PRESS) {
-            player.selectedSlot = 2;
-          } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_4) ==
-                     GLFW_PRESS) {
-            player.selectedSlot = 3;
-          } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_5) ==
-                     GLFW_PRESS) {
-            player.selectedSlot = 4;
-          }
-
-          if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_G) == GLFW_PRESS &&
-              player.slots[player.selectedSlot].itemID != -1) {
-            state = 3;
-          } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_G) ==
-                         GLFW_RELEASE &&
-                     state == 3) {
-            state = 0;
-            player.dropItem(player.selectedSlot, itemList);
-          }
-
-          if (menu.state != MenuState::VENDOR) {
-            if (player.slots[player.selectedSlot].itemID == 0) {
-              fishingSys.Update(window.getGLFWWindow(), deltaTime, player,
-                                itemList, gameMap, vendor);
-            }
-
-            // Update Player
-            player.Update(window.getGLFWWindow(), deltaTime, gameMap);
-            // Update Camera
-            camera.Inputs(window.getGLFWWindow(), (float)deltaTime,
-                          player.Position,
-                          glm::vec4(-gameMap.worldWidth / 2.0f,
-                                    -gameMap.worldHeight / 2.0f,
-                                    gameMap.worldWidth / 2.0f,
-                                    gameMap.worldHeight / 2.0f));
-          }
-
-          // --- RENDER ---
-          if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_E) == GLFW_PRESS &&
-              player.checkInteractionZone(gameMap)) {
-            state = 6;
-          } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_E) ==
-                         GLFW_RELEASE &&
-                     state == 6) {
-            menu.state = MenuState::VENDOR;
-            state = 0;
-          }
-          if (menu.state == MenuState::VENDOR) {
-            menu.vendorMenu(player, width, height);
-          }
-          if (Vendor::hasUpdated) {
-            Items::UpdateItemValue(player, itemList, vendor);
-            Vendor::hasUpdated = false;
-          }
-          menu.moneyDisplay(player);
-          // Activate Map Shader and Update Matrix for Layer 1
-          mapShader.Activate();
-          camera.updateMatrix(-100.0f, 100.0f, mapShader, "camMatrix");
-          gameMap.DrawLayer1(mapShader, camera);
-
-          // Activate Texture Shader and Update Matrix for entities (Player,
-          // Items)
-          textureShader.Activate();
-          camera.updateMatrix(-100.0f, 100.0f, textureShader, "camMatrix");
-
-          // Draw Items (Below player/Layer 2 usually)
-          if (!itemList.empty()) {
-            itemList.begin()->second->drawAtlas(textureShader, itemList,
-                                                winWidth, winHeight, camera);
-          }
-
-          // Draw Player
-          player.Draw(textureShader);
-
-          // Activate Map Shader again for Layer 2 (Overlays like trees)
-          mapShader.Activate();
-          camera.updateMatrix(-100.0f, 100.0f, mapShader, "camMatrix");
-          gameMap.DrawLayer2(mapShader, camera);
-
-          // Activate Texture Shader and Update Matrix for entities
-          textureShader.Activate();
-          camera.updateMatrix(-100.0f, 100.0f, textureShader, "camMatrix");
-
-          // Draw Player and NPC
-          player.Draw(textureShader);
-          npc.Draw(textureShader, camera);
-
-          // Draw Items
-
-          if (!itemList.empty()) {
-            itemList.begin()->second->drawAtlas(textureShader, itemList,
-                                                winWidth, winHeight, camera);
-          }
-
-          // --- IMGUI RENDER ---
-          const float PAD = 10.0f;
-          const ImGuiViewport *viewport = ImGui::GetMainViewport();
-          ImVec2 work_pos = viewport->WorkPos;
-          ImVec2 work_size = viewport->WorkSize;
-          ImVec2 window_pos;
-          window_pos.x = work_pos.x + work_size.x - PAD;
-          window_pos.y = work_pos.y + PAD;
-          ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always,
-                                  ImVec2(1.0f, 0.0f));
-
-          ImGui::SetNextWindowBgAlpha(0.35f);
-          if (ImGui::Begin("Camera Stats", NULL,
-                           ImGuiWindowFlags_NoDecoration |
-                               ImGuiWindowFlags_AlwaysAutoResize |
-                               ImGuiWindowFlags_NoSavedSettings |
-                               ImGuiWindowFlags_NoFocusOnAppearing |
-                               ImGuiWindowFlags_NoNav)) {
-            ImGui::Text("Camera Mode: %s",
-                        (camera.mode == CAMERA_FREE) ? "FREE" : "LOCKED");
-            ImGui::Separator();
-            ImGui::Text("Press 'C' to toggle");
-          }
-          ImGui::End();
-
-          // --- Interaction Popup UI ---
-          if (interactionUI.state == PopupState::SHOW) {
-            interactionUI.Draw(&camera, &player, &window);
-          }
-
-          panel.Update(window, player);
-
-          // --- MINIMAP ---
-          glm::vec3 minimapPos =
-              player.Position - glm::vec3(0.0f, player.size * 0.6f, 0.0f);
-          gameMap.DrawMinimap(minimapPos, camera, winWidth, winHeight);
         }
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        window.SwapBuffers();
-        window.PollEvents();
+        if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_F12) == GLFW_PRESS) {
+          state = 4;
+        } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_F12) ==
+                       GLFW_RELEASE &&
+                   state == 4) {
+          if (isFullscreen) {
+            glfwSetWindowMonitor(window.getGLFWWindow(), NULL, oldWinPosX,
+                                 oldWinPosY, oldWinWidth, oldWinHeight, 0);
+          } else {
+            glfwGetWindowPos(window.getGLFWWindow(), &oldWinPosX, &oldWinPosY);
+            glfwGetWindowSize(window.getGLFWWindow(), &oldWinWidth,
+                              &oldWinHeight);
+            glfwSetWindowMonitor(window.getGLFWWindow(), primaryMonitor, 0, 0,
+                                 mode->width, mode->height, mode->refreshRate);
+          }
+          isFullscreen = !isFullscreen;
+          state = 0;
+        }
+
+        if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_1) == GLFW_PRESS) {
+          player.selectedSlot = 0;
+        } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_2) ==
+                   GLFW_PRESS) {
+          player.selectedSlot = 1;
+        } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_3) ==
+                   GLFW_PRESS) {
+          player.selectedSlot = 2;
+        } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_4) ==
+                   GLFW_PRESS) {
+          player.selectedSlot = 3;
+        } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_5) ==
+                   GLFW_PRESS) {
+          player.selectedSlot = 4;
+        }
+
+        if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_G) == GLFW_PRESS &&
+            player.slots[player.selectedSlot].itemID != -1) {
+          state = 3;
+        } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_G) ==
+                       GLFW_RELEASE &&
+                   state == 3) {
+          state = 0;
+          player.dropItem(player.selectedSlot, itemList);
+        }
+
+        if (menu.state != MenuState::VENDOR) {
+          if (player.slots[player.selectedSlot].itemID == 0) {
+            fishingSys.Update(window.getGLFWWindow(), deltaTime, player,
+                              itemList, gameMap, vendor);
+          }
+
+          // Update Player
+          player.Update(window.getGLFWWindow(), deltaTime, gameMap);
+          // Update Camera
+          camera.Inputs(
+              window.getGLFWWindow(), (float)deltaTime, player.Position,
+              glm::vec4(-gameMap.worldWidth / 2.0f, -gameMap.worldHeight / 2.0f,
+                        gameMap.worldWidth / 2.0f, gameMap.worldHeight / 2.0f));
+        }
+
+        // --- RENDER ---
+        if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_E) == GLFW_PRESS &&
+            player.checkInteractionZone(gameMap)) {
+          state = 6;
+        } else if (glfwGetKey(window.getGLFWWindow(), GLFW_KEY_E) ==
+                       GLFW_RELEASE &&
+                   state == 6) {
+          menu.state = MenuState::VENDOR;
+          state = 0;
+        }
+        if (menu.state == MenuState::VENDOR) {
+          menu.vendorMenu(player, width, height);
+        }
+        if (Vendor::hasUpdated) {
+          Items::UpdateItemValue(player, itemList, vendor);
+          Vendor::hasUpdated = false;
+        }
+        menu.moneyDisplay(player);
+        // Activate Map Shader and Update Matrix for Layer 1
+        mapShader.Activate();
+        camera.updateMatrix(-100.0f, 100.0f, mapShader, "camMatrix");
+        gameMap.DrawLayer1(mapShader, camera);
+
+        // Activate Texture Shader and Update Matrix for entities (Player,
+        // Items)
+        textureShader.Activate();
+        camera.updateMatrix(-100.0f, 100.0f, textureShader, "camMatrix");
+
+        // Draw Items (Below player/Layer 2 usually)
+        if (!itemList.empty()) {
+          itemList.begin()->second->drawAtlas(textureShader, itemList, winWidth,
+                                              winHeight, camera);
+        }
+
+        // Draw Player
+        player.Draw(textureShader);
+
+        // Activate Map Shader again for Layer 2 (Overlays like trees)
+        mapShader.Activate();
+        camera.updateMatrix(-100.0f, 100.0f, mapShader, "camMatrix");
+        gameMap.DrawLayer2(mapShader, camera);
+
+        // Activate Texture Shader and Update Matrix for entities
+        textureShader.Activate();
+        camera.updateMatrix(-100.0f, 100.0f, textureShader, "camMatrix");
+
+        // Draw Player and NPC
+        player.Draw(textureShader);
+        npc.Draw(textureShader, camera);
+
+        // Draw Items
+
+        if (!itemList.empty()) {
+          itemList.begin()->second->drawAtlas(textureShader, itemList, winWidth,
+                                              winHeight, camera);
+        }
+
+        // --- IMGUI RENDER ---
+        const float PAD = 10.0f;
+        const ImGuiViewport *viewport = ImGui::GetMainViewport();
+        ImVec2 work_pos = viewport->WorkPos;
+        ImVec2 work_size = viewport->WorkSize;
+        ImVec2 window_pos;
+        window_pos.x = work_pos.x + work_size.x - PAD;
+        window_pos.y = work_pos.y + PAD;
+        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always,
+                                ImVec2(1.0f, 0.0f));
+
+        ImGui::SetNextWindowBgAlpha(0.35f);
+        if (ImGui::Begin("Camera Stats", NULL,
+                         ImGuiWindowFlags_NoDecoration |
+                             ImGuiWindowFlags_AlwaysAutoResize |
+                             ImGuiWindowFlags_NoSavedSettings |
+                             ImGuiWindowFlags_NoFocusOnAppearing |
+                             ImGuiWindowFlags_NoNav)) {
+          ImGui::Text("Camera Mode: %s",
+                      (camera.mode == CAMERA_FREE) ? "FREE" : "LOCKED");
+          ImGui::Separator();
+          ImGui::Text("Press 'C' to toggle");
+        }
+        ImGui::End();
+
+        // --- Interaction Popup UI ---
+        if (interactionUI.state == PopupState::SHOW) {
+          interactionUI.Draw(&camera, &player, &window);
+        }
+
+        panel.Update(window, player);
+
+        // --- MINIMAP ---
+        glm::vec3 minimapPos =
+            player.Position - glm::vec3(0.0f, player.size * 0.6f, 0.0f);
+        gameMap.DrawMinimap(minimapPos, camera, winWidth, winHeight);
       }
+      ImGui::Render();
+      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+      window.SwapBuffers();
+      window.PollEvents();
     }
-
-    textureShader.Delete();
-    mapShader.Delete();
-
-    // Explicit ImGui Cleanup
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-
-    return 0;
   }
+
+  textureShader.Delete();
+  mapShader.Delete();
+
+  // Explicit ImGui Cleanup
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
+
+  return 0;
+}

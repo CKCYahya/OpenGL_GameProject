@@ -72,6 +72,8 @@ add_executable(GameProject
     src/Animations.cpp
     src/InteractionUI.cpp
     src/Menu.cpp
+    src/Npc.cpp
+    src/Vendor.cpp
 )
 
 # Projenin Başlık (Header) Dosyalarının Yolları
