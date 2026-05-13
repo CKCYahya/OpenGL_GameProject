@@ -422,18 +422,27 @@ void Menu::vendorMenu(Player &player, float currentWidth, float currentHeight) {
 
     // --- BUTON 2: UPGRADE ---
     ImGui::SetCursorPosX(startPosX);
-    if (ImGui::Button("Upgrade Trade", ImVec2(buttonWidth, itemHeight))) {
-      Vendor::UpgradeTrade(player);
+    std::string tradeLabel = (Vendor::tradeLevel == UpgradeLevel::MAX) ? "Max Seviye###Trade" : "Upgrade Trade";
+    if (ImGui::Button(tradeLabel.c_str(), ImVec2(buttonWidth, itemHeight))) {
+      if (Vendor::tradeLevel != UpgradeLevel::MAX) {
+        Vendor::UpgradeTrade(player);
+      }
     }
 
     ImGui::SetCursorPosX(startPosX);
-    if (ImGui::Button("Upgrade Fishing", ImVec2(buttonWidth, itemHeight))) {
-      Vendor::UpgradeFishing(player);
+    std::string fishingLabel = (Vendor::fishingLevel == UpgradeLevel::MAX) ? "Max Seviye###Fishing" : "Upgrade Fishing";
+    if (ImGui::Button(fishingLabel.c_str(), ImVec2(buttonWidth, itemHeight))) {
+      if (Vendor::fishingLevel != UpgradeLevel::MAX) {
+        Vendor::UpgradeFishing(player);
+      }
     }
 
     ImGui::SetCursorPosX(startPosX);
-    if (ImGui::Button("Upgrade Boots", ImVec2(buttonWidth, itemHeight))) {
-      Vendor::UpgradeBoots(player);
+    std::string bootLabel = (Vendor::bootLevel == UpgradeLevel::MAX) ? "Max Seviye###Boots" : "Upgrade Boots";
+    if (ImGui::Button(bootLabel.c_str(), ImVec2(buttonWidth, itemHeight))) {
+      if (Vendor::bootLevel != UpgradeLevel::MAX) {
+        Vendor::UpgradeBoots(player);
+      }
     }
 
     // --- BUTON 3: BACK ---

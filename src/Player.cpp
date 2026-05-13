@@ -7,6 +7,7 @@
 #include "Texture.h"
 #include "VAO.h"
 #include "VBO.h"
+#include <iostream>
 
 Player::Player(glm::vec3 startPos, float size, float speed)
     : Position(startPos), size(size), speed(speed), direction(0) {
@@ -255,7 +256,8 @@ void Player::dropItem(int selectedSlot,
       itemList[entityID] =
           std::make_unique<Items>(dropName, this->Position, droppedItemID);
       item = itemList[entityID].get();
-      item->atlasIndex = Items::GetAtlasIndex(droppedItemID);
+      item->atlasIndex = slots[selectedSlot].atlasIndex;
+      item->value = slots[selectedSlot].itemValue;
     }
 
     if (slots[selectedSlot].count > 1) {

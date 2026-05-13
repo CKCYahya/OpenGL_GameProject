@@ -17,12 +17,14 @@
 
 std::vector<glm::vec2> Items::atlasWH;
 std::vector<std::shared_ptr<Texture>> Items::loadedAtlases;
-std::map<int, int> Items::itemValueTable;
+std::map<std::string, int> Items::itemNameValueTable;
 std::vector<std::string> images = {"spritesheet_32x32", "fishing rod"};
 
 Items::Items(const std::string &name, const glm::vec3 &position, int itemID)
     : name(name), position(position), ID(itemID) {
   slotIndex = -1;
+  atlasIndex = -1;
+  value = 0;
   float size = 16.0f;
   // Initialize VAO, VBO, EBO for the item
   // Load texture using texturePath
@@ -112,26 +114,16 @@ Items::readJsonItems(const char *jsonItems) {
                 }
 
                 if (!propValueStr.empty()) {
-                  // Fiyat bilgisini her zaman kaydet
-                  itemValueTable[localID] = propValueInt;
+                  // İsim bazlı tabloyu doldur
+                  itemNameValueTable[propValueStr] = propValueInt;
 
-                  // Balıkları spawn etme
-                  if (propValueStr == "palamut" || propValueStr == "levrek" ||
-                      propValueStr == "istavrit" || propValueStr == "uskumru" ||
-                      propValueStr == "lufer") {
-                    continue;
-                  }
-
-                  // Sadece Olta'yı belirli bir yere spawn et
                   if (propValueStr == "olta") {
                     auto newItem = std::make_unique<Items>(
-                        propValueStr, glm::vec3(300.0f, 300.0f, 0.0f), localID);
+                        propValueStr, glm::vec3(903.0f, 217.0f, 0.0f), localID);
                     newItem->atlasIndex = i;
                     newItem->value = propValueInt;
                     itemType[globalID] = std::move(newItem);
                   }
-                  // Diğer itemleri (eğer varsa) buraya ekleyebilirsin veya 
-                  // JSON'daki objeler katmanından okuyabiliriz.
                 }
               }
             }
@@ -192,7 +184,8 @@ void Items::drawAtlas(Shader &shader,
       float base_y = item.second->position.y - 16.0f; // item size assumed 16
       float zDepth = -base_y * 0.001f;
       glm::mat4 model = glm::mat4(1.0f);
-      model = glm::translate(model, glm::vec3(item.second->position.x, item.second->position.y, zDepth));
+      model = glm::translate(model, glm::vec3(item.second->position.x,
+                                              item.second->position.y, zDepth));
       glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE,
                          glm::value_ptr(model));
       item.second->vao->Bind();
@@ -313,9 +306,9 @@ bool Items::AddItem(Player &player, int itemID, std::string itemName) {
                  item.vOffset);
       item.count = 1;
 
-      // Fiyat bilgisini tablodan al
-      if (itemValueTable.find(itemID) != itemValueTable.end()) {
-        item.itemValue = itemValueTable[itemID];
+      // Fiyat bilgisini tablodan al (İsim bazlı)
+      if (itemNameValueTable.find(itemName) != itemNameValueTable.end()) {
+        item.itemValue = itemNameValueTable[itemName];
       }
 
       std::cout << "You added a " << itemName << " to your inventory!"
@@ -331,14 +324,12 @@ void Items::UpdateItemValue(Player &player,
                             std::map<int, std::unique_ptr<Items>> &worldItems,
                             Vendor &vendor) {
   for (auto &item : worldItems) {
-    if (vendor.tradeLevel != UpgradeLevel::MAX &&
-        item.second->name != "UNKNOWN" && item.second->value != 0) {
+    if (item.second->name != "UNKNOWN") {
       item.second->value = item.second->value + 50;
     }
   }
   for (auto &item : player.slots) {
-    if (vendor.tradeLevel != UpgradeLevel::MAX && item.itemName != "UNKNOWN" &&
-        item.itemValue != 0) {
+    if (item.itemName != "UNKNOWN" && item.itemID != -1) {
       item.itemValue = item.itemValue + 50;
     }
   }
